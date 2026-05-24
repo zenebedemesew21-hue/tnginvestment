@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TNG - Task Center</title>
+    <style>
+        :root {
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --dark: #0f172a;
+            --glass: rgba(255, 255, 255, 0.08);
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --success: #2ecc71;
+            --warning: #f1c40f;
+            --youtube-red: #ff0000;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0f172a;
+            color: white;
+            margin: 0;
+            padding: 20px;
+            padding-bottom: 120px;
+            min-height: 100vh;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+        }
+
+        .main-wrapper { width: 100%; max-width: 500px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 25px; }
+        .header h1 { background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; font-size: 26px; }
+        .header p { color: #94a3b8; font-size: 13px; margin-top: 5px; }
+
+        .task-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .platform-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 0, 0, 0.15);
+            color: #ff4757;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .task-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
+        .task-reward { font-size: 20px; color: var(--success); font-weight: 800; margin-bottom: 15px; }
+
+        .instructions {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .instructions h3 { margin: 0 0 8px 0; font-size: 14px; color: var(--secondary); }
+        .instructions ol { margin: 0; padding-left: 20px; color: #cbd5e1; font-size: 13px; line-height: 1.6; }
+
+        .btn-task {
+            width: 100%;
+            background: linear-gradient(to right, #ff0000, #ff4757);
+            border: none;
+            color: white;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 15px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255,0,0,0.2);
+            transition: 0.3s;
+        }
+        .btn-task:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(255,0,0,0.4); }
+        .btn-task:disabled { background: #475569; color: #94a3b8; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        .status-badge {
+            text-align: center;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 13px;
+            margin-top: 15px;
+            display: none;
+        }
+        .status-pending { background: rgba(241, 196, 15, 0.15); color: var(--warning); border: 1px dashed var(--warning); }
+        .status-approved { background: rgba(46, 204, 113, 0.15); color: var(--success); border: 1px dashed var(--success); }
+
+        /* የታችኛው ማውጫ (Navigation Bar) - የተስተካከለ */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; width: 100%;
+            background: #090d16;
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            color: #94a3b8; text-decoration: none; font-size: 12px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+        }
+        .nav-item.active { color: var(--primary); }
+        .nav-icon { font-size: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="main-wrapper">
+        <div class="header">
+            <h1>የታስክ ማዕከል (Task Center)</h1>
+            <p>ዕለታዊ ታስኮችን በመስራት ተጨማሪ ዳረጎት ያግኙ</p>
+        </div>
+
+        <div class="task-card">
+            <div class="platform-badge">▶ YouTube Task</div>
+            <div class="task-title">የ TNG ዩቱብ ቻናል ሰብስክራይብ ማድረግ</div>
+            <div class="task-reward">+50.00 ETB</div>
+
+            <div class="instructions">
+                <h3>የአሰራር መመሪያ (Instructions)፦</h3>
+                <ol>
+                    <li>ከታች ያለውን ቀይ በተን ሲጫኑ የዩቱብ ቻናሉ ይከፈታል።</li>
+                    <li>ቻናሉን <b>Subscribe</b> ያድርጉ።</li>
+                    <li>ሰብስክራይብ ካደረጉ በኋላ ወደዚህ ገጽ ሲመለሱ ታስኩ በራስ-ሰር ለአድሚን ማረጋገጫ ይላካል።</li>
+                </ol>
+            </div>
+
+            <button id="subBtn" class="btn-task" onclick="submitTaskForApproval()">🔴 ሰብስክራይብ አድርጌያለሁ (Submit Task)</button>
+            <div id="statusBox" class="status-badge"></div>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="memberdashbord.html" class="nav-item"><span class="nav-icon">🏠</span>መነሻ</a>
+        <a href="vipcenter.html" class="nav-item"><span class="nav-icon">📊</span>VIP</a>
+        <a href="#" class="nav-item active"><span class="nav-icon">📝</span>ታስክ</a>
+        <a href="profile.html" class="nav-item"><span class="nav-icon">👤</span>እኔ</a>
+    </nav>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // የፕሮጀክትህ ትክክለኛ የ Supabase ሊንኮች
+        const SUPABASE_URL = 'https://jkxkstmtjrszqdsobdfr.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpreGtzdG10anJzenFkc29iZGZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MTg1NjAsImV4cCI6MjA5NDk5NDU2MH0.weNY8wtxWRA1e1dCFWyIk8O1oMU47SURJNoTV53lIeI';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const savedPhone = localStorage.getItem('user_phone');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if(!savedPhone) {
+                window.location.href = "index.html";
+                return;
+            }
+            checkTaskStatus();
+        });
+
+        async function checkTaskStatus() {
+            try {
+                const { data, error } = await _supabase
+                    .from('user_tasks')
+                    .select('*')
+                    .eq('phone_number', savedPhone)
+                    .eq('task_id', 'youtube_sub_50')
+                    .maybeSingle();
+
+                if(!error && data) {
+                    const statusBox = document.getElementById('statusBox');
+                    const btn = document.getElementById('subBtn');
+
+                    if(data.status === 'pending') {
+                        btn.disabled = true;
+                        btn.innerText = "⏳ ተልኳል (Pending)";
+                        statusBox.innerText = "⏳ ታስኩ ለአድሚን ተልኳል፤ እባክዎ አድሚኑ እስኪያጸድቅልዎት ይጠብቁ።";
+                        statusBox.className = "status-badge status-pending";
+                        statusBox.style.display = "block";
+                    } else if(data.status === 'completed' || data.status === 'approved') {
+                        btn.disabled = true;
+                        btn.innerText = "✅ ተጠናቋል (Completed)";
+                        statusBox.innerText = "🎉 እንኳን ደስ አለዎት! ታስኩ በአድሚን ጸድቆ 50 ETB ገቢ ሆኗል።";
+                        statusBox.className = "status-badge status-approved";
+                        statusBox.style.display = "block";
+                    }
+                }
+            } catch (err) { console.log(err); }
+        }
+
+        async function submitTaskForApproval() {
+            // ⚠️ ማስታወቂያ፦ ከታች ካለው 'https://youtube.com' ፋንታ የእውነተኛውን የ TNG Official ዩቱብ ቻናል ሊንክህን አስገባ!
+            window.open('https://youtube.com', '_blank'); 
+            
+            const btn = document.getElementById('subBtn');
+            btn.disabled = true;
+            btn.innerText = "በመላክ ላይ...";
+
+            setTimeout(async () => {
+                try {
+                    const { error } = await _supabase
+                        .from('user_tasks')
+                        .insert([ {
+                            phone_number: savedPhone,
+                            task_id: 'youtube_sub_50',
+                            task_title: 'YouTube Subscribe',
+                            payout: 50,
+                            status: 'pending'
+                        } ]);
+
+                    if(!error) {
+                        checkTaskStatus();
+                    } else {
+                        btn.disabled = false;
+                        btn.innerText = "🔴 ሰብስክራይብ አድርጌያለሁ (Submit Task)";
+                        alert("ስህተት፦ ታስኩን ለመላክ አልተቻለም። " + error.message);
+                    }
+                } catch (err) { alert("የግንኙነት ስህተት!"); }
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

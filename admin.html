@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>TNG - Ultimate Admin Control Center</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --purple: #a855f7;
+            --dark-bg: #090d16;
+            --sidebar-bg: rgba(15, 23, 42, 0.85);
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-hover: rgba(255, 255, 255, 0.12);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text: #ffffff;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+            background: radial-gradient(circle at bottom left, #1e1b4b, #090d16);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* የጎን ማውጫ (Sidebar Menu) */
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-brand {
+            padding: 25px;
+            font-size: 22px;
+            font-weight: bold;
+            background: linear-gradient(to right, var(--primary), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 15px 0;
+            margin: 0;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .sidebar-item a {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 14px 25px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 15px;
+            transition: all 0.2s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .sidebar-item a:hover, .sidebar-item.active a {
+            color: var(--text);
+            background: var(--glass-hover);
+            border-left-color: var(--primary);
+        }
+
+        .sidebar-item i {
+            width: 20px;
+            font-size: 16px;
+        }
+
+        /* ዋናው ይዘት ማሳያ (Main Dashboard Window) */
+        .main-content {
+            margin-left: 260px;
+            flex-grow: 1;
+            padding: 30px;
+            min-height: 100vh;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .page-title h1 {
+            margin: 0;
+            font-size: 26px;
+            font-weight: 600;
+        }
+        .page-title p {
+            margin: 5px 0 0 0;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .admin-profile-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: var(--glass);
+            padding: 8px 18px;
+            border-radius: 30px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .role-badge {
+            background: rgba(168, 85, 247, 0.2);
+            color: var(--purple);
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: bold;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+
+        /* የመረጃ ካርዶች (Dashboard Analytics Widgets) */
+        .widgets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .widget-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .widget-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 4px; height: 100%;
+            background: var(--primary);
+        }
+        .widget-card.purple::before { background: var(--purple); }
+        .widget-card.success::before { background: var(--success); }
+        .widget-card.warning::before { background: var(--warning); }
+        .widget-card.danger::before { background: var(--danger); }
+
+        .widget-info h3 {
+            margin: 0;
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .widget-info p {
+            margin: 8px 0 0 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .widget-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: var(--primary);
+        }
+
+        /* ቻርቶች */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .chart-box {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .chart-box h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 16px;
+            color: var(--text-muted);
+        }
+
+        /* የገጾች መቆጣጠሪያ */
+        .admin-section {
+            display: none;
+        }
+        .admin-section.active-section {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* የዳታ ሰንጠረዦች */
+        .table-container {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-top: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .table-header-tools {
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .search-input {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--glass-border);
+            padding: 8px 15px;
+            border-radius: 8px;
+            color: white;
+            outline: none;
+            width: 220px;
+        }
+        .search-input:focus { border-color: var(--primary); }
+
+        .btn-action {
+            background: var(--glass-hover);
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-action:hover { background: white; color: black; }
+
+        .btn-approve { background: rgba(16, 185, 129, 0.2); color: var(--success); border-color: var(--success); }
+        .btn-approve:hover { background: var(--success); color: white; }
+        .btn-reject { background: rgba(239, 68, 68, 0.2); color: var(--danger); border-color: var(--danger); }
+        .btn-reject:hover { background: var(--danger); color: white; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 14px;
+        }
+        th {
+            background: rgba(0, 0, 0, 0.15);
+            padding: 15px 20px;
+            color: var(--text-muted);
+            font-weight: 500;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        td {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--glass-border);
+            vertical-align: middle;
+        }
+        tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+        /* የስታተስ ባጆች */
+        .badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .badge-pending { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+        .badge-approved { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+        .badge-rejected { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+
+        /* ፎርሞች */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 15px;
+        }
+        .form-group {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 20px;
+            border-radius: 12px;
+        }
+        .form-group h4 { margin-top: 0; margin-bottom: 15px; color: var(--primary); }
+
+        .form-control {
+            width: 100%;
+            box-sizing: border-box;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--glass-border);
+            padding: 10px;
+            border-radius: 6px;
+            color: white;
+            margin-bottom: 15px;
+            outline: none;
+        }
+
+        .btn-submit {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: var(--dark-bg);
+            font-weight: bold;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        /* የደንበኞች ቀጥታ ሴክሬት ቻት ተርሚናል */
+        .chat-container {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            height: 550px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .chat-users-list {
+            border-right: 1px solid var(--glass-border);
+            overflow-y: auto;
+            background: rgba(0,0,0,0.2);
+        }
+        .chat-user-item {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .chat-user-item:hover, .chat-user-item.active-chat-user { background: var(--glass-hover); }
+        .chat-user-item p { margin: 0; font-size: 14px; }
+        .chat-user-item span { font-size: 11px; color: var(--text-muted); }
+
+        .chat-window { display: flex; flex-direction: column; height: 100%; background: rgba(0,0,0,0.1); }
+        .chat-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--glass-border);
+            background: rgba(0,0,0,0.2);
+            font-weight: bold;
+            color: var(--primary);
+        }
+        .chat-messages {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .msg-bubble {
+            max-width: 70%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+        .msg-user { background: var(--glass-hover); align-self: flex-start; border-bottom-left-radius: 2px; }
+        .msg-admin { background: var(--purple); color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+
+        .chat-input-area {
+            padding: 15px;
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            gap: 10px;
+            background: rgba(0,0,0,0.2);
+        }
+
+        /* ቶስት ማሳወቂያ */
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        .toast {
+            background: rgba(15, 23, 42, 0.95);
+            border-left: 4px solid var(--primary);
+            color: white;
+            padding: 15px 25px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            backdrop-filter: blur(10px);
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @media(max-width: 992px) {
+            .sidebar { width: 70px; }
+            .sidebar .sidebar-brand span, .sidebar .sidebar-item span { display: none; }
+            .main-content { margin-left: 70px; padding: 15px; }
+            .chat-container { grid-template-columns: 1fr; }
+            .chat-users-list { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <i class="fa-solid fa-shield-halved"></i> <span>TNG CONTROL</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-item active" onclick="switchSection('home', this)"><a href="#"><i class="fa-solid fa-chart-pie"></i> <span>Dashboard</span></a></li>
+            <li class="sidebar-item" onclick="switchSection('users', this)"><a href="#"><i class="fa-solid fa-users"></i> <span>Users Core Control</span></a></li>
+            <li class="sidebar-item" onclick="switchSection('deposits', this)"><a href="#"><i class="fa-solid fa-wallet"></i> <span>Deposits Logs</span></a></li>
+            <li class="sidebar-item" onclick="switchSection('withdrawals', this)"><a href="#"><i class="fa-solid fa-money-bill-transfer"></i> <span>Withdrawals Matrix</span></a></li>
+            <li class="sidebar-item" onclick="switchSection('vip', this)"><a href="#"><i class="fa-solid fa-gem"></i> <span>VIP Engine</span></a></li>
+            <li class="sidebar-item" onclick="switchSection('tasks', this)"><a href="#"><i class="fa-solid fa-list-check"></i> <span>Tasks Validator</span></a></li>
+            <li class="sidebar-item" onclick="switchSection('livechat', this)"><a href="#"><i class="fa-solid fa-comments"></i> <span>Secret Chat Hub</span></a></li>
+            <li class="sidebar-item" onclick="switchSection('marketing', this)"><a href="#"><i class="fa-solid fa-bullhorn"></i> <span>Notice Board</span></a></li>
+            <li class="sidebar-item" onclick="handleAdminLogout()"><a href="#" style="color:var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> <span>System Logout</span></a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        
+        <div class="top-bar">
+            <div class="page-title">
+                <h1 id="current-section-title">Main Control Workspace</h1>
+                <p>TNG Enterprise Live Database Node</p>
+            </div>
+            <div class="admin-profile-area">
+                <div class="role-badge"><i class="fa-solid fa-crown"></i> Head Admin</div>
+                <span>Secured Tunnel</span>
+            </div>
+        </div>
+
+        <div id="section-home" class="admin-section active-section">
+            <div class="widgets-grid">
+                <div class="widget-card">
+                    <div class="widget-info"><h3>Total Registered Members</h3><p id="w-total-users">0</p></div>
+                    <div class="widget-icon"><i class="fa-solid fa-users"></i></div>
+                </div>
+                <div class="widget-card purple">
+                    <div class="widget-info"><h3>Approved Income Deposits</h3><p id="w-total-dep">0 ETB</p></div>
+                    <div class="widget-icon"><i class="fa-solid fa-arrow-down-long"></i></div>
+                </div>
+                <div class="widget-card success">
+                    <div class="widget-info"><h3>Approved Cash Withdrawals</h3><p id="w-total-wit">0 ETB</p></div>
+                    <div class="widget-icon"><i class="fa-solid fa-arrow-up-from-bracket"></i></div>
+                </div>
+                <div class="widget-card warning">
+                    <div class="widget-info"><h3>Pending Deposit Queries</h3><p id="w-pend-dep">0</p></div>
+                    <div class="widget-icon"><i class="fa-solid fa-hourglass-start"></i></div>
+                </div>
+                <div class="widget-card danger">
+                    <div class="widget-info"><h3>Pending Payout Demands</h3><p id="w-pend-wit">0</p></div>
+                    <div class="widget-icon"><i class="fa-solid fa-clock"></i></div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-box">
+                    <h3>Capital Cashflow Distribution (ETB)</h3>
+                    <canvas id="financialChart" height="190"></canvas>
+                </div>
+                <div class="chart-box">
+                    <h3>VIP Rank Engagement Map</h3>
+                    <canvas id="vipPieChart" height="190"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-users" class="admin-section">
+            <div class="form-grid" style="margin-bottom: 25px;">
+                <div class="form-group">
+                    <h4><i class="fa-solid fa-user-plus"></i> Manual Insert Account Node</h4>
+                    <div style="display:flex; gap:10px; flex-wrap: wrap;">
+                        <input type="text" id="m-phone" class="form-control" style="width:200px;" placeholder="Phone (e.g., 0912...)"/>
+                        <input type="password" id="m-pass" class="form-control" style="width:200px;" placeholder="PIN/Password"/>
+                        <button class="btn-submit" style="width:160px; height:42px;" onclick="manualCreateUser()">Create Profile</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <div class="table-header-tools">
+                    <div>
+                        <input type="text" class="search-input" placeholder="Search user by phone..." onkeyup="filterTable(this, 'users-tbody')"/>
+                    </div>
+                    <button class="btn-action" onclick="exportCSV('users-table-node', 'TNG_Registered_Members')"><i class="fa-solid fa-file-csv"></i> Export Members Base Excel</button>
+                </div>
+                <table id="users-table-node">
+                    <thead>
+                        <tr>
+                            <th>Member Phone</th>
+                            <th>Balance Adjust (ETB)</th>
+                            <th>Change VIP Rank</th>
+                            <th>Expiry Control</th>
+                            <th>Bank Network</th>
+                            <th>Account String / Code</th>
+                            <th>Account Security Controls</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="section-deposits" class="admin-section">
+            <div class="table-container">
+                <div class="table-header-tools">
+                    <input type="text" class="search-input" placeholder="Filter deposits..." onkeyup="filterTable(this, 'deposits-tbody')"/>
+                    <button class="btn-action" onclick="exportCSV('deposits-table-node', 'TNG_Deposits_Report')"><i class="fa-solid fa-file-csv"></i> Export Deposits Excel</button>
+                </div>
+                <table id="deposits-table-node">
+                    <thead>
+                        <tr>
+                            <th>Depositor Phone</th>
+                            <th>Gateway Channel</th>
+                            <th>Amount Sent</th>
+                            <th>Transaction ID Reference</th>
+                            <th>Submission Time</th>
+                            <th>Current State</th>
+                            <th>Process Node Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="deposits-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="section-withdrawals" class="admin-section">
+            <div class="table-container">
+                <div class="table-header-tools">
+                    <input type="text" class="search-input" placeholder="Filter cashouts..." onkeyup="filterTable(this, 'withdraws-tbody')"/>
+                    <button class="btn-action" style="background-color: #047857;" onclick="exportCSV('withdrawals-table-node', 'TNG_Withdrawals_Payout_Sheet')">
+                        <i class="fa-solid fa-file-excel"></i> Export Payouts Sheet (Excel)
+                    </button>
+                </div>
+                <table id="withdrawals-table-node">
+                    <thead>
+                        <tr>
+                            <th>Recipient Phone</th>
+                            <th>Linked Bank Matrix Information</th>
+                            <th>Payout Amount Demand</th>
+                            <th>Timeline Requested</th>
+                            <th>Authorization Status</th>
+                            <th>Action Trigger Buttons</th>
+                        </tr>
+                    </thead>
+                    <tbody id="withdraws-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="section-vip" class="admin-section">
+            <div class="form-grid">
+                <div class="form-group">
+                    <h4><i class="fa-solid fa-gears"></i> Core ROI Auto-Distribution Script (VIP 1 - VIP 7)</h4>
+                    <p style="color:var(--text-muted); font-size:13.5px; line-height:1.6;">
+                        በቀን አንዴ ይህንን ማስተናገጃ በተን ሲጫኑ ሲስተሙ በሙሉ የተመዘገቡ የፕላትፎርሙ አባላት ላይ በመዞር በቪአይፒ (**VIP 1 - VIP 7**) ደረጃቸው መሰረት የዕለት ጥቅማጥቅማቸውን (Daily ROI Yield) በአንድ ሰከንድ ውስጥ ያሰላል፣ አካውንታቸው ላይ ይጨምራል፣ እንዲሁም የቪአይፒ ጊዜያቸው ያለፈባቸውን ተጠቃሚዎች በራስ-ሰር ወደ Free Tier ያወርዳል።
+                    </p>
+                    <button class="btn-submit" style="background: linear-gradient(135deg, var(--purple), #db2777); font-size:15px; padding:14px;" onclick="triggerDailyROIEngine()">
+                        <i class="fa-solid fa-bolt"></i> Run Global Mass Daily ROI Payouts Loop (VIP 1-7)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-tasks" class="admin-section">
+            <div class="table-container">
+                <div class="table-header-tools">
+                    <h3>Social Media Submission Pipeline Logs (YouTube Tasks)</h3>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Submitter Phone</th>
+                            <th>Task Event Target</th>
+                            <th>Expected Payout</th>
+                            <th>Verification Status</th>
+                            <th>Execution Controls</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tasks-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="section-livechat" class="admin-section">
+            <div class="chat-container">
+                <div class="chat-users-list" id="chat-threads-box"></div>
+                <div class="chat-window">
+                    <div class="chat-header" id="active-chat-title">
+                        <i class="fa-solid fa-headset"></i> Secret Communication Terminal (Select an open ticket)
+                    </div>
+                    <div class="chat-messages" id="chat-messages-box">
+                        <p style="color:var(--text-muted); text-align:center; margin-top:160px; font-size:14px;">
+                            <i class="fa-solid fa-comments-blur" style="font-size: 24px;"></i><br/><br/>
+                            አባላትን ለማነጋገር ወይም ለጥያቄዎቻቸው Reply ለመስጠት በግራ በኩል ካለው ዝርዝር የስልክ ቁጥራቸውን ይምረጡ።
+                        </p>
+                    </div>
+                    <div class="chat-input-area">
+                        <input type="text" id="chat-reply-input" class="form-control" style="margin-bottom:0;" placeholder="አባል ለመመለስ እዚህ ጋር መልስ ይጻፉ..."/>
+                        <button class="btn-submit" style="width:110px;" onclick="sendAdminChatMessage()"><i class="fa-solid fa-paper-plane"></i> Reply</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-marketing" class="admin-section">
+            <div class="form-grid">
+                <div class="form-group">
+                    <h4><i class="fa-solid fa-bullhorn"></i> Broadcast Live Banner Message Notice To All Members Panel</h4>
+                    <textarea id="announcement-text" class="form-control" rows="4" placeholder="በአባላት ዳሽቦርድ ላይ የሚለጠፍ አዲስ ማስታወቂያ እዚህ ይፃፉ..."></textarea>
+                    <button class="btn-submit" onclick="pushAnnouncement()">Broadcast Notice Stream</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script>
+        // -------------------------------------------------------------
+        // SUPABASE BOUND ENGINE WORKSPACE
+        // -------------------------------------------------------------
+        const SUPABASE_URL = "https://jkxkstmtjrszqdsobdfr.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpreGtzdG10anJzenFkc29iZGZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MTg1NjAsImV4cCI6MjA5NDk5NDU2MH0.weNY8wtxWRA1e1dCFWyIk8O1oMU47SURJNoTV53lIeI";
+        
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let activeChatPhone = null;
+        let financialChartInstance = null;
+        let vipPieChartInstance = null;
+
+        // BIND APPLICATION ACCESS
+        window.addEventListener('DOMContentLoaded', () => {
+            if(!localStorage.getItem('tng_admin_token')) {
+                const securityPass = prompt("🔐 Enter Encrypted Root Access Password to Unlock System Management Dashboard:");
+                if(securityPass === "TNG_ADMIN_2026") {
+                    localStorage.setItem('tng_admin_token', 'authorized_session');
+                    showToast("Root Secure Tunnel Active.", "success");
+                } else {
+                    alert("Fatal Security Error: Invalid Access Key Token.");
+                    document.body.innerHTML = "<h1 style='color:var(--danger); text-align:center; margin-top:20%; font-family:sans-serif;'>🔒 Security Error: Access Token Rejected.</h1>";
+                    return;
+                }
+            }
+
+            // Sync Core Workers Loops
+            fetchMetricsData();
+            loadUsersTable();
+            loadDepositsTable();
+            loadWithdrawsTable();
+            loadTasksTable();
+            loadChatThreads();
+            setupRealtimeSubscriptions();
+        });
+
+        // UI NAVIGATION SPA SWITCHBOARD
+        function switchSection(sectionId, element) {
+            document.querySelectorAll('.admin-section').forEach(sec => sec.classList.remove('active-section'));
+            document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
+            
+            document.getElementById(`section-${sectionId}`).classList.add('active-section');
+            if(element) element.classList.add('active');
+            document.getElementById('current-section-title').innerText = "SYSTEM CONTROL ENGINE -> " + sectionId.toUpperCase();
+        }
+
+        // NOTIFICATION MODULE
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            if(type === 'success') toast.style.borderLeftColor = 'var(--success)';
+            if(type === 'danger') toast.style.borderLeftColor = 'var(--danger)';
+            if(type === 'warning') toast.style.borderLeftColor = 'var(--warning)';
+            
+            toast.innerHTML = `<i class="fa-solid fa-bell"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 5000);
+        }
+
+        // METRICS GRAPH AGGREGATION ENGINE
+        async function fetchMetricsData() {
+            try {
+                const { data: uData } = await _supabase.from('users').select('phone_number, balance, vip_level');
+                document.getElementById('w-total-users').innerText = uData ? uData.length : 0;
+
+                const { data: dData } = await _supabase.from('deposits').select('amount, status');
+                let totalDepSum = 0, pendDepCount = 0;
+                if(dData) {
+                    dData.forEach(d => {
+                        if(d.status === 'approved') totalDepSum += Number(d.amount);
+                        if(d.status === 'pending') pendDepCount++;
+                    });
+                }
+                document.getElementById('w-total-dep').innerText = totalDepSum.toLocaleString() + " ETB";
+                document.getElementById('w-pend-dep').innerText = pendDepCount;
+
+                const { data: wData } = await _supabase.from('withdrawals').select('amount, status');
+                let totalWitSum = 0, pendWitCount = 0;
+                if(wData) {
+                    wData.forEach(w => {
+                        if(w.status === 'approved') totalWitSum += Number(w.amount);
+                        if(w.status === 'pending') pendWitCount++;
+                    });
+                }
+                document.getElementById('w-total-wit').innerText = totalWitSum.toLocaleString() + " ETB";
+                document.getElementById('w-pend-wit').innerText = pendWitCount;
+
+                renderCharts(totalDepSum, totalWitSum, uData);
+            } catch (err) { console.error(err); }
+        }
+
+        function renderCharts(deps, wits, users) {
+            const ctx1 = document.getElementById('financialChart').getContext('2d');
+            if(financialChartInstance) financialChartInstance.destroy();
+            financialChartInstance = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['Approved Inflow Deposits', 'Approved Outflow Withdrawals'],
+                    datasets: [{
+                        data: [deps, wits],
+                        backgroundColor: ['#00f2fe', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { display: false } } }
+            });
+
+            let vipMap = { 'Free Tier': 0, 'VIP 1': 0, 'VIP 2': 0, 'VIP 3': 0, 'VIP 4': 0, 'VIP 5': 0, 'VIP 6': 0, 'VIP 7': 0 };
+            if(users) users.forEach(u => { if(vipMap[u.vip_level] !== undefined) vipMap[u.vip_level]++; });
+
+            const ctx2 = document.getElementById('vipPieChart').getContext('2d');
+            if(vipPieChartInstance) vipPieChartInstance.destroy();
+            vipPieChartInstance = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(vipMap),
+                    datasets: [{
+                        data: Object.values(vipMap),
+                        backgroundColor: ['#475569', '#3b82f6', '#10b981', '#f59e0b', '#a855f7', '#ec4899', '#f43f5e', '#10b981']
+                    }]
+                },
+                options: { responsive: true }
+            });
+        }
+
+        // SHA-256 PASSWORD HASH METHOD ENCRYPTOR MATCH ENGINE
+        async function hashPassword(password) {
+            const msgBuffer = new TextEncoder().encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // MEMBERS ROOT RECORD SHEET (UPDATED WITH VIP 1 - VIP 7 DROP DOWN)
+        async function loadUsersTable() {
+            const tbody = document.getElementById('users-tbody');
+            tbody.innerHTML = "<tr><td colspan='7'>Fetching data streams...</td></tr>";
+            
+            const { data, error } = await _supabase.from('users').select('*').order('created_at', { ascending: false });
+            if(error) return;
+
+            tbody.innerHTML = "";
+            data.forEach(user => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-weight:bold; color:var(--primary);">${user.phone_number}</td>
+                    <td><input type="number" step="0.01" class="search-input" style="width:105px; padding:4px;" value="${user.balance}" onchange="updateUserDirectBalance('${user.phone_number}', this.value)"/></td>
+                    <td>
+                        <select class="search-input" style="width:105px; padding:4px;" onchange="updateUserDirectVIP('${user.phone_number}', this.value)">
+                            <option value="Free Tier" ${user.vip_level==='Free Tier'?'selected':''}>Free Tier</option>
+                            <option value="VIP 1" ${user.vip_level==='VIP 1'?'selected':''}>VIP 1</option>
+                            <option value="VIP 2" ${user.vip_level==='VIP 2'?'selected':''}>VIP 2</option>
+                            <option value="VIP 3" ${user.vip_level==='VIP 3'?'selected':''}>VIP 3</option>
+                            <option value="VIP 4" ${user.vip_level==='VIP 4'?'selected':''}>VIP 4</option>
+                            <option value="VIP 5" ${user.vip_level==='VIP 5'?'selected':''}>VIP 5</option>
+                            <option value="VIP 6" ${user.vip_level==='VIP 6'?'selected':''}>VIP 6</option>
+                            <option value="VIP 7" ${user.vip_level==='VIP 7'?'selected':''}>VIP 7</option>
+                        </select>
+                    </td>
+                    <td><span style="font-size:12px;">${user.vip_expiry || 'None'}</span></td>
+                    <td><span id="bank-lbl-${user.phone_number}" style="color:var(--text-muted); font-size:13px;">${user.bank_name || 'Unlinked'}</span></td>
+                    <td><span id="acct-lbl-${user.phone_number}" style="font-family:monospace; font-size:13px;">${user.bank_account_number || 'N/A'}</span></td>
+                    <td>
+                        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                            <button class="btn-action" style="border-color:var(--warning); color:var(--warning);" onclick="triggerUserPinReset('${user.phone_number}')"><i class="fa-solid fa-key"></i> Reset PIN</button>
+                            <button class="btn-action" style="border-color:#f43f5e; color:#f43f5e;" onclick="clearUserBankDetails('${user.phone_number}')"><i class="fa-solid fa-building-columns"></i> Clear Bank</button>
+                            <button class="btn-action btn-reject" onclick="deleteUserRecord('${user.phone_number}')"><i class="fa-solid fa-user-slash"></i> Ban</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function updateUserDirectBalance(phone, amount) {
+            const { error } = await _supabase.from('users').update({ balance: Number(amount) }).eq('phone_number', phone);
+            if(!error) showToast(`Balance manually modified for node: ${phone}`, 'success');
+        }
+
+        async function updateUserDirectVIP(phone, tier) {
+            const exp = new Date(); exp.setDate(exp.getDate() + 365);
+            const expString = exp.toISOString().split('T')[0];
+            const { error } = await _supabase.from('users').update({ vip_level: tier, vip_expiry: expString }).eq('phone_number', phone);
+            if(!error) { showToast(`VIP Level modified to ${tier}`, 'success'); fetchMetricsData(); }
+        }
+
+        // የባንክ መረጃ ማጥፊያ (RESET/DELETE BANK INFO)
+        async function clearUserBankDetails(phone) {
+            if(!confirm(`⚠️ የባንክ አካውንት ማጥፊያ ማረጋገጫ፦ የደንበኛ ቁጥር ${phone} ያገናኘውን የባንክ አካውንት መረጃ ሙሉ በሙሉ ማጥፋት ይፈልጋሉ?`)) return;
+            
+            const { error } = await _supabase.from('users').update({
+                bank_name: null,
+                bank_account_number: null,
+                account_holder_name: null
+            }).eq('phone_number', phone);
+
+            if(!error) {
+                showToast(`የባንክ መረጃ በተሳካ ሁኔታ ተሰርዟል! አባሉ አዲስ አካውንት ማገናኘት ይችላል።`, 'success');
+                loadUsersTable();
+            } else { alert("Error clearing database details: " + error.message); }
+        }
+
+        // የአባላት PIN መቀየሪያ (MANUAL PIN RESET ENGINE)
+        async function triggerUserPinReset(phone) {
+            const newRawPin = prompt(`🔐 ለአባል [${phone}] የሚሆን አዲስ አጭር ባለ 4 ወይም ባለ 6 አሃዝ ሚስጥር ቁጥር ያስገቡ:`);
+            if(!newRawPin || newRawPin.trim() === "") return;
+
+            const securedHashedPin = await hashPassword(newRawPin.trim());
+            const { error } = await _supabase.from('users').update({ password: securedHashedPin }).eq('phone_number', phone);
+
+            if(!error) {
+                alert(`🎉 የይለፍ ቃል በተሳካ ሁኔታ ተቀይሯል!\nለተጠቃሚው አዲሱን ሚስጥር ቁጥር ይንገሩት፦ ${newRawPin}`);
+                showToast(`PIN Reset code pushed for user: ${phone}`, 'success');
+            } else { alert("Failed to alter server code: " + error.message); }
+        }
+
+        async function deleteUserRecord(phone) {
+            if(!confirm(`Severe Action Alert: Completely purge account profile for ${phone}?`)) return;
+            const { error } = await _supabase.from('users').delete().eq('phone_number', phone);
+            if(!error) { showToast("User banned.", "danger"); loadUsersTable(); fetchMetricsData(); }
+        }
+
+        async function manualCreateUser() {
+            const phone = document.getElementById('m-phone').value.trim();
+            const pass = document.getElementById('m-pass').value;
+            if(!phone || !pass) return alert("Complete all variables fields inputs!");
+
+            const encryptedPass = await hashPassword(pass);
+            const { error } = await _supabase.from('users').insert([{ phone_number: phone, password: encryptedPass, balance: 0, vip_level: 'Free Tier' }]);
+            if(!error) {
+                showToast("Account entry deployed safely.", "success");
+                document.getElementById('m-phone').value = ""; document.getElementById('m-pass').value = "";
+                loadUsersTable(); fetchMetricsData();
+            } else { alert(error.message); }
+        }
+
+        // DEPOSIT DATA PARSER
+        async function loadDepositsTable() {
+            const tbody = document.getElementById('deposits-tbody'); tbody.innerHTML = "";
+            const { data } = await _supabase.from('deposits').select('*').order('id', { ascending: false });
+            if(!data) return;
+
+            data.forEach(d => {
+                const tr = document.createElement('tr');
+                let tools = `---`;
+                if(d.status === 'pending') {
+                    tools = `
+                        <button class="btn-action btn-approve" onclick="processDeposit(${d.id}, '${d.phone_number}', ${d.amount}, 'approved')">Approve</button>
+                        <button class="btn-action btn-reject" onclick="processDeposit(${d.id}, '${d.phone_number}', ${d.amount}, 'rejected')">Reject</button>
+                    `;
+                }
+                tr.innerHTML = `
+                    <td style="font-weight:bold;">${d.phone_number}</td>
+                    <td><span class="badge" style="background:rgba(255,255,255,0.08);">${d.payment_method}</span></td>
+                    <td style="color:var(--primary); font-weight:bold;">${Number(d.amount).toLocaleString()} ETB</td>
+                    <td style="font-family:monospace; color:var(--warning);">${d.ft_number}</td>
+                    <td>${new Date(d.created_at).toLocaleDateString()}</td>
+                    <td><span class="badge badge-${d.status}">${d.status}</span></td>
+                    <td>${tools}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function processDeposit(id, phone, amount, outcome) {
+            const { error } = await _supabase.from('deposits').update({ status: outcome }).eq('id', id);
+            if(error) return alert("Database fault.");
+
+            if(outcome === 'approved') {
+                const { data: user } = await _supabase.from('users').select('balance').eq('phone_number', phone).single();
+                if(user) {
+                    await _supabase.from('users').update({ balance: Number(user.balance) + Number(amount) }).eq('phone_number', phone);
+                }
+            }
+            showToast(`Deposit marked as ${outcome}`, 'success');
+            loadDepositsTable(); loadUsersTable(); fetchMetricsData();
+        }
+
+        // WITHDRAWAL ARCHIVE GATEWAY PIPELINE LOGLOAD
+        async function loadWithdrawsTable() {
+            const tbody = document.getElementById('withdraws-tbody'); tbody.innerHTML = "";
+            const { data } = await _supabase.from('withdrawals').select('*').order('id', { ascending: false });
+            if(!data) return;
+
+            data.forEach(w => {
+                const tr = document.createElement('tr');
+                let triggers = `---`;
+                if(w.status === 'pending') {
+                    triggers = `
+                        <button class="btn-action btn-approve" onclick="processWithdraw(${w.id}, '${w.phone_number}', ${w.amount}, 'approved')"><i class="fa-solid fa-check"></i> Pay Member</button>
+                        <button class="btn-action btn-reject" onclick="processWithdraw(${w.id}, '${w.phone_number}', ${w.amount}, 'rejected')"><i class="fa-solid fa-xmark"></i> Bounce</button>
+                    `;
+                }
+                tr.innerHTML = `
+                    <td style="font-weight:bold; color:var(--purple);">${w.phone_number}</td>
+                    <td style="font-size:13px; max-width:280px; color:white; font-weight: 500;">${w.bank_details || 'Missing Bank Trace Wire'}</td>
+                    <td style="color:#f43f5e; font-weight:bold; font-size:15px;">${Number(w.amount).toLocaleString()} ETB</td>
+                    <td>${new Date(w.created_at).toLocaleString()}</td>
+                    <td><span class="badge badge-${w.status}">${w.status}</span></td>
+                    <td>${triggers}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function processWithdraw(id, phone, amount, target) {
+            const { error } = await _supabase.from('withdrawals').update({ status: target }).eq('id', id);
+            if(error) return alert("System database processing fault.");
+
+            if(target === 'rejected') {
+                const { data: user } = await _supabase.from('users').select('balance').eq('phone_number', phone).single();
+                if(user) {
+                    await _supabase.from('users').update({ balance: Number(user.balance) + Number(amount) }).eq('phone_number', phone);
+                }
+            }
+            showToast(`Withdraw processing request set to: ${target}`, 'info');
+            loadWithdrawsTable(); loadUsersTable(); fetchMetricsData();
+        }
+
+        // TASK RESOLVER SUBMISSIONS WORKSPACE
+        async function loadTasksTable() {
+            const tbody = document.getElementById('tasks-tbody'); tbody.innerHTML = "";
+            const { data } = await _supabase.from('user_tasks').select('*').order('id', { ascending: false });
+            if(!data) return;
+
+            data.forEach(t => {
+                const tr = document.createElement('tr');
+                let actionSuite = `---`;
+                if(t.status === 'pending') {
+                    actionSuite = `
+                        <button class="btn-action btn-approve" onclick="processTask(${t.id}, '${t.phone_number}', ${t.payout}, 'approved')">Accept</button>
+                        <button class="btn-action btn-reject" onclick="processTask(${t.id}, '${t.phone_number}', ${t.payout}, 'rejected')">Deny</button>
+                    `;
+                }
+                tr.innerHTML = `
+                    <td>${t.phone_number}</td>
+                    <td style="color:var(--secondary); font-weight:500;">${t.task_title}</td>
+                    <td style="color:var(--success); font-weight:bold;">+${t.payout} ETB</td>
+                    <td><span class="badge badge-${t.status}">${t.status}</span></td>
+                    <td>${actionSuite}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function processTask(id, phone, reward, finalOutcome) {
+            const { error } = await _supabase.from('user_tasks').update({ status: finalOutcome }).eq('id', id);
+            if(error) return;
+
+            if(finalOutcome === 'approved') {
+                const { data: u } = await _supabase.from('users').select('balance').eq('phone_number', phone).single();
+                if(u) { await _supabase.from('users').update({ balance: Number(u.balance) + Number(reward) }).eq('phone_number', phone); }
+            }
+            showToast(`Task assignment submission resolved as ${finalOutcome}`, 'info');
+            loadTasksTable(); loadUsersTable();
+        }
+
+        // DYNAMIC ROI AUTO-DISTRIBUTION SCRIPT (UPDATED FROM VIP 1 - VIP 7)
+        async function triggerDailyROIEngine() {
+            if(!confirm("⚠️ Absolute Execution Alert: Inject balance matrix dynamic yield to all verified profiles (VIP 1 - VIP 7)?")) return;
+            
+            // የቪአይፒ 1 እስከ ቪአይፒ 7 የቀን ገቢ ማትሪክስ መረጃ
+            const incomeMatrix = { 
+                'Free Tier': 0, 
+                'VIP 1': 50, 
+                'VIP 2': 140, 
+                'VIP 3': 380, 
+                'VIP 4': 920, 
+                'VIP 5': 2100,
+                'VIP 6': 5000,
+                'VIP 7': 12000
+            };
+            
+            const { data: usersList, error } = await _supabase.from('users').select('phone_number, balance, vip_level, vip_expiry');
+            if(error || !usersList) return alert("Operation operational failure.");
+
+            let updatedRecordsCount = 0;
+            const currentServerDate = new Date().toISOString().split('T')[0];
+
+            for(let account of usersList) {
+                if(account.vip_level !== 'Free Tier') {
+                    // የማለቂያ ቀን ካለፈበት ወደ Free Tier ማውረጃ ቼከር
+                    if(account.vip_expiry && account.vip_expiry < currentServerDate) {
+                        await _supabase.from('users').update({ vip_level: 'Free Tier' }).eq('phone_number', account.phone_number);
+                        continue;
+                    }
+                    
+                    const dailyYield = incomeMatrix[account.vip_level] || 0;
+                    if(dailyYield > 0) {
+                        await _supabase.from('users').update({ balance: Number(account.balance) + dailyYield }).eq('phone_number', account.phone_number);
+                        updatedRecordsCount++;
+                    }
+                }
+            }
+            showToast(`🎉 Bulk ROI Distributed to [${updatedRecordsCount}] active VIP 1 - VIP 7 rows!`, 'success');
+            loadUsersTable(); fetchMetricsData();
+        }
+
+        // SECRET COMMUNICATION CHAT MODULE SYSTEM
+        async function loadChatThreads() {
+            const threadBox = document.getElementById('chat-threads-box');
+            threadBox.innerHTML = "";
+            
+            const { data: packets } = await _supabase.from('live_chat').select('phone_number, created_at, sender').order('created_at', { ascending: false });
+            if(!packets) return;
+
+            let uniqueChannels = [];
+            packets.forEach(item => { if(!uniqueChannels.includes(item.phone_number)) uniqueChannels.push(item.phone_number); });
+
+            if(uniqueChannels.length === 0) {
+                threadBox.innerHTML = `<p style="padding:15px; font-size:13px; color:var(--text-muted);">ምንም ክፍት የቻት መልዕክት የለም።</p>`;
+                return;
+            }
+
+            uniqueChannels.forEach(userPhone => {
+                const row = document.createElement('div');
+                row.className = `chat-user-item ${activeChatPhone === userPhone ? 'active-chat-user' : ''}`;
+                row.onclick = () => selectChatThread(userPhone, row);
+                row.innerHTML = `<p style="font-weight:bold; color:var(--primary);"><i class="fa-solid fa-envelope"></i> ${userPhone}</p><span>TNG Member Secure Link</span>`;
+                threadBox.appendChild(row);
+            });
+        }
+
+        async function selectChatThread(phone, element) {
+            activeChatPhone = phone;
+            document.querySelectorAll('.chat-user-item').forEach(el => el.classList.remove('active-chat-user'));
+            if(element) element.classList.add('active-chat-user');
+
+            document.getElementById('active-chat-title').innerHTML = `<i class="fa-solid fa-user-shield"></i> Secret Chat Terminal -> Reply Link Active (${phone})`;
+
+            const msgBox = document.getElementById('chat-messages-box');
+            msgBox.innerHTML = "Opening secure terminal session link stream...";
+
+            const { data: messagesHistory } = await _supabase.from('live_chat').select('*').eq('phone_number', phone).order('created_at', { ascending: true });
+            msgBox.innerHTML = "";
+            
+            if(messagesHistory && messagesHistory.length > 0) {
+                messagesHistory.forEach(msg => {
+                    const elBubble = document.createElement('div');
+                    elBubble.className = `msg-bubble ${msg.sender === 'admin' ? 'msg-admin' : 'msg-user'}`;
+                    elBubble.innerHTML = `<strong>${msg.sender === 'admin' ? 'Admin Rep:' : 'Member:'}</strong><br/>${msg.message}`;
+                    msgBox.appendChild(elBubble);
+                });
+                msgBox.scrollTop = msgBox.scrollHeight;
+            } else {
+                msgBox.innerHTML = `<p style="color:var(--text-muted); text-align:center; margin-top:150px;">ምንም መልዕክት የለም።</p>`;
+            }
+        }
+
+        async function sendAdminChatMessage() {
+            const boxInput = document.getElementById('chat-reply-input');
+            const dataText = boxInput.value.trim();
+            if(!dataText) return;
+            if(!activeChatPhone) return alert("Configuration path error: select target active member phone first.");
+
+            const { error } = await _supabase.from('live_chat').insert([{
+                phone_number: activeChatPhone,
+                message: dataText,
+                sender: 'admin'
+            }]);
+
+            if(!error) {
+                boxInput.value = "";
+                selectChatThread(activeChatPhone, null);
+            } else { alert("Failed to inject chat message query row: " + error.message); }
+        }
+
+        // BULLETIN GLOBAL NOTICES CORNER BOARD
+        async function pushAnnouncement() {
+            const textNotice = document.getElementById('announcement-text').value.trim();
+            if(!textNotice) return alert("Notice bulletin field characters context empty!");
+
+            const { error } = await _supabase.from('announcements').insert([{ message: textNotice }]);
+            if(!error) {
+                showToast("Global notice banner update broadcast completed.", "success");
+                document.getElementById('announcement-text').value = "";
+            }
+        }
+
+        // INTERCEPT REALTIME PIPELINES STREAM EVENTS
+        function setupRealtimeSubscriptions() {
+            _supabase.channel('tng-extended-admin-stream')
+                .on('postgres_changes', { event: 'INSERT', table: 'deposits' }, payload => {
+                    showToast(`🚨 REALTIME: New Deposit stream from ${payload.new.phone_number} for ${payload.new.amount} ETB!`, 'warning');
+                    loadDepositsTable(); fetchMetricsData();
+                })
+                .on('postgres_changes', { event: 'INSERT', table: 'withdrawals' }, payload => {
+                    showToast(`🚨 REALTIME: Cashout withdrawal query requested by ${payload.new.phone_number}!`, 'danger');
+                    loadWithdrawsTable(); fetchMetricsData();
+                })
+                .on('postgres_changes', { event: 'INSERT', table: 'live_chat' }, payload => {
+                    if(payload.new.sender === 'user') {
+                        showToast(`💬 Secret Chat Message row from user profile: ${payload.new.phone_number}`, 'success');
+                        loadChatThreads();
+                        if(activeChatPhone === payload.new.phone_number) selectChatThread(activeChatPhone, null);
+                    }
+                })
+                .subscribe();
+        }
+
+        // ADVANCED EXCEL / CSV COMPILER COMPONENT SYSTEM
+        function exportCSV(tableId, filenamePrefix) {
+            let csvRowsData = [];
+            const targetTable = document.getElementById(tableId);
+            if(!targetTable) return alert("Data reference node mapping error.");
+
+            const tableRows = targetTable.querySelectorAll("tr");
+            for (let i = 0; i < tableRows.length; i++) {
+                let columnsPayload = [], headerOrCells = tableRows[i].querySelectorAll("td, th");
+                
+                for (let j = 0; j < headerOrCells.length; j++) {
+                    let cellText = "";
+                    const hasInput = headerOrCells[j].querySelector("input");
+                    const hasSelect = headerOrCells[j].querySelector("select");
+                    
+                    if (hasInput) {
+                        cellText = hasInput.value;
+                    } else if (hasSelect) {
+                        cellText = hasSelect.options[hasSelect.selectedIndex].text;
+                    } else {
+                        cellText = headerOrCells[j].innerText;
+                    }
+                    
+                    cellText = cellText.replace(/Confirm Payment|Bounce\/Reject|Approve|Reject|Ban User|Reset PIN|Clear Bank|Pay Member|Bounce/g, "").trim();
+                    columnsPayload.push('="' + cellText.replace(/"/g, '""') + '"');
+                }
+                csvRowsData.push(columnsPayload.join(","));
+            }
+
+            const timestamp = new Date().toISOString().split('T')[0];
+            const dataBlobFile = new Blob([ "\ufeff" + csvRowsData.join("\n")], { type: "text/csv;charset=utf-8;" });
+            const anchorLink = document.createElement("a");
+            anchorLink.download = `${filenamePrefix}_${timestamp}.csv`;
+            anchorLink.href = window.URL.createObjectURL(dataBlobFile);
+            anchorLink.style.display = "none";
+            document.body.appendChild(anchorLink);
+            anchorLink.click();
+            document.body.removeChild(anchorLink);
+            showToast("📊 ሪፖርቱ በተሳካ ሁኔታ ወደ Excel (CSV) ተቀይሮ መውረድ ጀምሯል!", "success");
+        }
+
+        // LOCAL INTERACTIVE FILTER SEARCH COMPONENT 
+        function filterTable(input, tbodyId) {
+            const matcher = input.value.toUpperCase();
+            const matchingRows = document.getElementById(tbodyId).getElementsByTagName("tr");
+            for (let i = 0; i < matchingRows.length; i++) {
+                let identifierCell = matchingRows[i].getElementsByTagName("td")[0];
+                if (identifierCell) {
+                    let stringValue = identifierCell.textContent || identifierCell.innerText;
+                    matchingRows[i].style.display = stringValue.toUpperCase().indexOf(matcher) > -1 ? "" : "none";
+                }
+            }
+        }
+
+        function handleAdminLogout() {
+            localStorage.removeItem('tng_admin_token');
+            window.location.reload();
+        }
+    </script>
+</body>
+</html>

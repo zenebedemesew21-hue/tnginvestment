@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TNG - Withdraw</title>
+    <style>
+        :root {
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --dark: #0f172a;
+            --glass: rgba(255, 255, 255, 0.08);
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --danger: #ff4757;
+            --success: #2ecc71;
+            --warning: #f1c40f;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            color: white;
+            margin: 0;
+            padding: 20px;
+            padding-bottom: 120px;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .main-wrapper {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .header-section {
+            text-align: center;
+            padding: 15px 0;
+            margin-bottom: 15px;
+        }
+
+        .header-section h2 {
+            margin: 0;
+            font-size: 22px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        .balance-card {
+            background: linear-gradient(135deg, rgba(0, 242, 254, 0.1), rgba(79, 172, 254, 0.1));
+            border: 1px solid rgba(0, 242, 254, 0.2);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+
+        .balance-label {
+            font-size: 13px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .balance-amount {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .rules-card {
+            background: rgba(241, 196, 15, 0.04);
+            border: 1px solid rgba(241, 196, 15, 0.15);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 12px;
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+
+        .rules-card strong {
+            color: var(--warning);
+            display: block;
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+
+        .form-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 20px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            color: #cbd5e1;
+            margin-bottom: 6px;
+        }
+
+        .input-group input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 12px;
+            padding: 13px;
+            color: white;
+            font-size: 15px;
+            box-sizing: border-box;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.15);
+        }
+
+        .account-preview {
+            background: rgba(46, 204, 113, 0.06);
+            border: 1px dashed rgba(46, 204, 113, 0.25);
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 13px;
+            color: #cbd5e1;
+            margin-bottom: 15px;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .account-preview.error-preview {
+            background: rgba(255, 71, 87, 0.08);
+            border: 1px dashed rgba(255, 71, 87, 0.3);
+            color: #ff8787;
+        }
+
+        .edit-bank-lnk {
+            position: absolute;
+            top: 12px; right: 12px;
+            color: var(--primary); text-decoration: none; font-size: 11px; font-weight: bold;
+        }
+        .edit-bank-lnk:hover { text-decoration: underline; }
+
+        .fee-display {
+            font-size: 12px; color: var(--warning); margin-bottom: 15px; font-weight: 500; display: none;
+        }
+
+        .withdraw-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            color: var(--dark); border: none; border-radius: 12px; padding: 14px;
+            font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.2s;
+            display: flex; justify-content: center; align-items: center; gap: 10px;
+        }
+
+        .withdraw-btn:disabled { opacity: 0.6; cursor: not-allowed; background: #475569 !important; color: #94a3b8; }
+        .withdraw-btn:active:not(:disabled) { transform: scale(0.98); }
+
+        .spinner {
+            width: 18px; height: 18px; border: 3px solid rgba(15, 23, 42, 0.3);
+            border-radius: 50%; border-top-color: var(--dark);
+            animation: spin 0.8s linear infinite; display: none;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .time-error {
+            background: rgba(255, 71, 87, 0.1); border: 1px solid rgba(255, 71, 87, 0.3);
+            color: var(--danger); padding: 15px; border-radius: 15px; text-align: center;
+            font-size: 13px; margin-bottom: 20px; display: none; line-height: 1.4;
+        }
+
+        .history-section {
+            margin-top: 25px; background: var(--card-bg); border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 15px; padding: 15px;
+        }
+        .history-title { font-size: 14px; font-weight: bold; color: var(--secondary); margin-bottom: 10px; }
+        .history-list { display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto; }
+        .history-item {
+            background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; font-size: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .status-badge { padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+        .status-pending { background: rgba(241, 196, 15, 0.2); color: var(--warning); }
+        .status-approved { background: rgba(46, 204, 113, 0.2); color: var(--success); }
+        .status-rejected { background: rgba(255, 71, 87, 0.2); color: var(--danger); }
+
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: #090d16; display: flex; justify-content: space-around;
+            padding: 12px 0; border-top: 1px solid rgba(255,255,255,0.08); z-index: 1000;
+        }
+        .nav-item { text-align: center; color: #94a3b8; font-size: 11px; text-decoration: none; width: 25%; }
+        .nav-item.active { color: var(--primary); }
+        .nav-icon { font-size: 20px; display: block; margin-bottom: 2px; }
+    </style>
+</head>
+<body>
+
+    <div class="main-wrapper">
+        <div class="header-section">
+            <h2>💵 ገንዘብ ማውጫ (Withdraw)</h2>
+        </div>
+
+        <div id="time-restriction-msg" class="time-error">
+            🚫 <strong>ይቅርታ ማውጫ በአሁኑ ሰዓት ተዘግቷል!</strong><br>
+            የገንዘብ ማውጫ ክፍት የሚሆነው በየቀኑ ከጠዋቱ 6:00 AM እስከ ማታ 11:00 PM ብቻ ነው።
+        </div>
+
+        <div class="balance-card">
+            <div class="balance-label">ሊወጣ የሚችል ባላንስ</div>
+            <div class="balance-amount" id="user-balance">0.00 ETB</div>
+        </div>
+
+        <div class="rules-card">
+            <strong>⚠️ የገንዘብ ማውጫ ሕጎች እና መግለጫ፦</strong>
+            • አነስተኛ የማውጫ መጠን 300.00 ETB ሲሆን ከፍተኛው የዕለት ገደብ 50,000.00 ETB ነው።<br>
+            • የማውጫ የአገልግሎት ክፍያ (Fee) 10% ከጠቅላላው ሂሳብ ላይ ይታሰባል።<br>
+            • ሁሉም የማውጫ ጥያቄዎች በአድሚን በእጅ ተረጋግጠው ከ 1 እስከ 24 ሰዓት ባለው ጊዜ ውስጥ ይላካሉ።
+        </div>
+
+        <div class="form-card" id="withdraw-form-container">
+            <div class="account-preview" id="bank-info-preview">
+                ⏳ የባንክ መረጃ በመፈለግ ላይ...
+            </div>
+
+            <form id="withdrawForm" onsubmit="handleWithdrawSubmit(event)">
+                <div class="input-group">
+                    <label for="withdraw-amount">የማውጫ መጠን (ETB)</label>
+                    <input type="number" id="withdraw-amount" min="300" max="50000" step="1" placeholder="ቢያንስ 300 ያስገቡ" required oninput="calculateFee()">
+                </div>
+                <div id="fee-text" class="fee-display">ክፍያ (10% Fee)፦ 0.00 ETB | ወደ እርስዎ የሚደርሰው፦ 0.00 ETB</div>
+                
+                <button type="submit" class="withdraw-btn" id="submit-btn">
+                    <span class="spinner" id="btn-spinner"></span>
+                    <span id="btn-text">የማውጫ ጥያቄ ላክ (Withdraw)</span>
+                </button>
+            </form>
+        </div>
+
+        <div class="history-section">
+            <div class="history-title">🕒 የቅርብ ጊዜ የማውጫ ታሪክ (History)</div>
+            <div class="history-list" id="history-container">
+                <div style="font-size:11px; color:var(--text-muted); text-align:center; padding:10px;">ምንም የማውጫ ታሪክ የለም</div>
+            </div>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="memberdashbord.html" class="nav-item"><span class="nav-icon">🏠</span>መነሻ</a>
+        <a href="tttvipcenter.html" class="nav-item"><span class="nav-icon">📊</span>VIP</a>
+        <a href="ttask.html" class="nav-item"><span class="nav-icon">📝</span>ታስክ</a>
+        <a href="profile.html" class="nav-item active"><span class="nav-icon">👤</span>እኔ</a>
+    </nav>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // የአዲሱ Supabase ፕሮጀክት ሊንኮች
+        const SUPABASE_URL = 'https://zplyununpszjdfclvnin.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpwbHl1bnVucHN6amRmY2x2bmluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NzMzNTYsImV4cCI6MjA5NDQ0OTM1Nn0.mEjjoVyhLhNAnvDfPox2ujNpdefsHsf63YNa06_8FeA';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const savedPhone = localStorage.getItem('user_phone');
+        let currentBalance = 0;
+        let userBankDetails = null;
+        let hasPendingWithdrawal = false;
+        const WITHDRAW_FEE_PERCENT = 0.10; 
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if(!savedPhone) {
+                window.location.href = "index.html";
+                return;
+            }
+            if(checkWithdrawalTime()) {
+                loadUserData();
+                loadWithdrawalHistory();
+            }
+        });
+
+        function checkWithdrawalTime() {
+            const now = new Date();
+            const currentHour = now.getHours(); 
+
+            if (currentHour < 6 || currentHour >= 23) {
+                document.getElementById('time-restriction-msg').style.display = 'block';
+                document.getElementById('withdraw-amount').disabled = true;
+                setBtnState(true, 'ማውጫ ሰዓት አልፏል (Closed)');
+                return false;
+            }
+            return true;
+        }
+
+        function setBtnState(disabled, text = '') {
+            const btn = document.getElementById('submit-btn');
+            const spinner = document.getElementById('btn-spinner');
+            const btnTxt = document.getElementById('btn-text');
+            btn.disabled = disabled;
+            if(text) btnTxt.innerText = text;
+            spinner.style.display = disabled && text === 'በማስተናገድ ላይ...' ? 'inline-block' : 'none';
+        }
+
+        async function loadUserData() {
+            try {
+                const { data, error } = await _supabase.from('users').select('*').eq('phone_number', savedPhone).maybeSingle();
+
+                if (error) {
+                    document.getElementById('bank-info-preview').innerHTML = "❌ የመረጃ ስህተት አጋጥሟል።";
+                    return;
+                }
+
+                if (data) {
+                    currentBalance = parseFloat(data.balance || 0);
+                    document.getElementById('user-balance').innerText = currentBalance.toFixed(2) + " ETB";
+                    
+                    // የባንክ መረጃ መኖሩን ማረጋገጫ (አካውንት ቁጥር እና ስም ካለ ብቻ ነው የሚሰራው)
+                    if(data.account_number && data.account_name && data.account_name.trim() !== "") {
+                        // የባንክ ስም በዳታቤዝ ላይ ከሌለ እንደ አማራጭ Telebirr እንዲያደርገው ተደርጓል
+                        const bankDisplay = data.bank_name ? data.bank_name : "Telebirr";
+                        userBankDetails = {
+                            bank: bankDisplay,
+                            name: data.account_name,
+                            number: data.account_number
+                        };
+                        document.getElementById('bank-info-preview').className = "account-preview";
+                        document.getElementById('bank-info-preview').innerHTML = 
+                            `💰 <strong>የመላኪያ አካውንትዎ፦</strong> <a href="profile.html" class="edit-bank-lnk">ቀይር ✏️</a><br>
+                             ባንክ፦ ${bankDisplay}<br>ስም፦ ${data.account_name}<br>ቁጥር፦ ${data.account_number}`;
+                    } else {
+                        // አካውንት ካላገናኘ ገጹ ላይ ቀይ ማስጠንቀቂያ ያሳያል፣ ፎርሙንም ይዘጋል
+                        const previewDiv = document.getElementById('bank-info-preview');
+                        previewDiv.className = "account-preview error-preview";
+                        previewDiv.innerHTML = "⚠️ ገንዘብ ለማውጣት መጀመሪያ በ 'እኔ' ገጽ ላይ የባንክ አካውንትዎን ማገናኘት አለብዎት!";
+                        document.getElementById('withdraw-amount').disabled = true;
+                        setBtnState(true, 'እባክዎ መጀመሪያ አካውንት ያገናኙ');
+                        
+                        alert("⚠️ ገንዘብ ለማውጣት መጀመሪያ በ 'እኔ' ገጽ ላይ የባንክ አካውንትዎን ማገናኘት አለብዎት!");
+                        setTimeout(() => { window.location.href = "profile.html"; }, 2000);
+                    }
+                } else {
+                    // ተጠቃሚው ዳታቤዝ ላይ ሙሉ በሙሉ ከጠፋ
+                    const previewDiv = document.getElementById('bank-info-preview');
+                    previewDiv.className = "account-preview error-preview";
+                    previewDiv.innerHTML = "❌ ተጠቃሚው በዳታቤዝ ላይ አልተገኘም! እባክዎ መጀመሪያ ይመዝገቡ።";
+                    document.getElementById('withdraw-amount').disabled = true;
+                    setBtnState(true, 'ተጠቃሚ አልተገኘም');
+                }
+            } catch (err) {
+                console.error("የመረጃ ስህተት!");
+            }
+        }
+
+        async function loadWithdrawalHistory() {
+            try {
+                const { data, error } = await _supabase.from('withdrawals').select('*').eq('phone_number', savedPhone).order('id', { ascending: false });
+
+                if(!error && data) {
+                    const container = document.getElementById('history-container');
+                    if(data.length === 0) return;
+
+                    hasPendingWithdrawal = data.some(w => w.status === 'pending');
+                    if(hasPendingWithdrawal) {
+                        setBtnState(true, 'ያልተጠናቀቀ ጥያቄ አለዎት (Pending)');
+                    }
+
+                    container.innerHTML = data.map(w => {
+                        let statusClass = 'status-pending';
+                        let statusText = 'በሂደት ላይ';
+                        if(w.status === 'approved') { statusClass = 'status-approved'; statusText = 'የተላከ'; }
+                        if(w.status === 'rejected') { statusClass = 'status-rejected'; statusText = 'ውድቅ የተደረገ'; }
+
+                        return `
+                            <div class="history-item">
+                                <div>
+                                    <strong>${parseFloat(w.amount).toFixed(2)} ETB</strong><br>
+                                    <span style="font-size:10px; color:var(--text-muted);">${new Date(w.created_at || Date.now()).toLocaleDateString()}</span>
+                                </div>
+                                <span class="status-badge ${statusClass}">${statusText}</span>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } catch(e) { console.log(e); }
+        }
+
+        function calculateFee() {
+            const amountInput = document.getElementById('withdraw-amount').value;
+            const feeText = document.getElementById('fee-text');
+            
+            if(!amountInput || isNaN(amountInput) || amountInput <= 0) {
+                feeText.style.display = 'none';
+                return;
+            }
+
+            const amount = parseFloat(amountInput);
+            const fee = amount * WITHDRAW_FEE_PERCENT;
+            const netAmount = amount - fee;
+
+            feeText.style.display = 'block';
+            feeText.innerHTML = `ክፍያ (10% Fee)፦ <strong>${fee.toFixed(2)} ETB</strong> | ወደ እርስዎ የሚደርሰው፦ <strong style="color:var(--success);">${netAmount.toFixed(2)} ETB</strong>`;
+        }
+
+        async function handleWithdrawSubmit(event) {
+            event.preventDefault();
+
+            if(!checkWithdrawalTime()) return;
+            if(hasPendingWithdrawal) {
+                alert("❌ ቀደም ብሎ የላኩት ጥያቄ በሂደት ላይ ስላለ በድጋሚ መላክ አይችሉም!");
+                return;
+            }
+
+            const amountVal = document.getElementById('withdraw-amount').value;
+            if(amountVal.includes('.') || amountVal.includes('-')) {
+                alert("❌ እባክዎ ሙሉ ቁጥር ብቻ ያስገቡ!");
+                return;
+            }
+
+            const amount = parseInt(amountVal);
+
+            if (isNaN(amount) || amount < 300) {
+                alert("❌ ዝቅተኛው የማውጫ መጠን 300 ETB ነው።");
+                return;
+            }
+            if (amount > 50000) {
+                alert("❌ የአንድ ቀን ከፍተኛው የማውጫ መጠን 50,000 ETB ነው።");
+                return;
+            }
+            if (amount > currentBalance) {
+                alert(`❌ በቂ ቀሪ ሂሳብ የለዎትም! አሁን ያለዎት ባላንስ፦ ${currentBalance.toFixed(2)} ETB`);
+                return;
+            }
+            if (!userBankDetails) {
+                alert("❌ የባንክ አካውንት መረጃ አልተገኘም!");
+                return;
+            }
+
+            setBtnState(true, 'በማስተናገድ ላይ...');
+
+            try {
+                const { data, error } = await _supabase.rpc('process_secure_withdrawal', {
+                    p_phone: savedPhone,
+                    p_amount: amount,
+                    p_bank: userBankDetails.bank,
+                    p_details: `ስም: ${userBankDetails.name}, ቁጥር: ${userBankDetails.number}`
+                });
+
+                if (error) {
+                    alert("❌ ስህተት፦ " + error.message);
+                    setBtnState(false, 'የማውጫ ጥያቄ ላክ (Withdraw)');
+                    return;
+                }
+
+                alert("🎉 የማውጫ ጥያቄዎ በአስተማማኝ ሁኔታ ተመዝግቧል። አድሚን አረጋግጦ ይልክልዎታል።");
+                window.location.reload();
+
+            } catch (err) {
+                alert("የቴክኒክ ስህተት አጋጥሟል፦ " + err.message);
+                setBtnState(false, 'የማውጫ ጥያቄ ላክ (Withdraw)');
+            }
+        }
+    </script>
+</body>
+</html>

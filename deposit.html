@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TNG - Deposit</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --dark: #0f172a;
+            --glass: rgba(255, 255, 255, 0.08);
+            --warning: #f1c40f;
+            --telebirr: #0066cc;
+            --mpesa: #4ea800;
+            --usdt: #f3ba2f;
+        }
+        body {
+            font-family: 'Segoe UI', -apple-system, sans-serif;
+            background: var(--dark);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        .container {
+            width: 100%;
+            max-width: 420px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .header h2 {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0 0 10px 0;
+            font-size: 24px;
+        }
+        .header p {
+            color: #94a3b8;
+            font-size: 14px;
+            margin: 0;
+        }
+        .payment-methods {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 25px;
+        }
+        .method-card {
+            background: var(--glass);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 16px;
+            position: relative;
+        }
+        .method-badge {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: bold;
+            color: white;
+        }
+        .method-title {
+            display: block;
+            font-size: 14px;
+            color: #94a3b8;
+            margin-bottom: 6px;
+        }
+        .copy-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 14px;
+            border-radius: 10px;
+            margin-top: 5px;
+        }
+        .account-num {
+            font-size: 16px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+        .copy-btn {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border: none;
+            color: #0f172a;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .copy-btn:hover {
+            opacity: 0.9;
+        }
+        form {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 14px;
+            color: white;
+            box-sizing: border-box;
+            outline: none;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary);
+        }
+        .limit-text {
+            font-size: 12px;
+            color: var(--warning);
+            margin-top: 6px;
+            display: block;
+            font-weight: 500;
+        }
+        .btn-submit {
+            width: 100%;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border: none;
+            color: #0f172a;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+            transition: transform 0.1s;
+        }
+        .btn-submit:active {
+            transform: scale(0.98);
+        }
+        .btn-submit:disabled {
+            background: #475569;
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
+        .back-btn {
+            display: block;
+            text-align: center;
+            color: #94a3b8;
+            text-decoration: none;
+            margin-top: 20px;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+        .back-btn:hover {
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>📥 ገንዘብ ማስገቢያ ማዕከል</h2>
+            <p>ከታች ካሉት አማራጮች አንዱን ኮፒ አድርገው ብር ይላኩ</p>
+        </div>
+
+        <div class="payment-methods">
+            <div class="method-card" style="border-left: 4px solid var(--telebirr);">
+                <span class="method-badge" style="background: var(--telebirr);">Telebirr</span>
+                <span class="method-title">ስልክ ቁጥር፦</span>
+                <div class="copy-wrapper">
+                    <b id="telebirr-account" class="account-num">0944623638</b>
+                    <button class="copy-btn" onclick="copyToClipboard('telebirr-account', this)">Copy 📋</button>
+                </div>
+            </div>
+            
+            <div class="method-card" style="border-left: 4px solid var(--mpesa);">
+                <span class="method-badge" style="background: var(--mpesa);">M-Pesa</span>
+                <span class="method-title">ስልክ ቁጥር፦</span>
+                <div class="copy-wrapper">
+                    <b id="mpesa-account" class="account-num">0710543712</b>
+                    <button class="copy-btn" onclick="copyToClipboard('mpesa-account', this)">Copy 📋</button>
+                </div>
+            </div>
+            
+            <div class="method-card" style="border-left: 4px solid var(--usdt);">
+                <span class="method-badge" style="background: var(--usdt);">USDT (BEP20)</span>
+                <span class="method-title">Network: BNB Smart Chain (BEP20)</span>
+                <div class="copy-wrapper">
+                    <b id="usdt-address" style="font-size: 12px; word-break: break-all;">0xb03624b0aabf17c0d761bb749c0ddf06becc78a7</b>
+                    <button class="copy-btn" onclick="copyToClipboard('usdt-address', this)">Copy 📋</button>
+                </div>
+            </div>
+        </div>
+
+        <form id="depositForm" onsubmit="handleDepositSubmit(event)">
+            <div class="form-group">
+                <label>የተጠቀሙበት የክፍያ መንገድ</label>
+                <select id="dep-method" onchange="updateMinLimit()" required>
+                    <option value="Telebirr">Telebirr</option>
+                    <option value="M-Pesa">M-Pesa</option>
+                    <option value="USDT (BEP20)">USDT (BEP20)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>የገንዘብ መጠን</label>
+                <input type="number" id="dep-amount" placeholder="የገንዘብ መጠን ያስገቡ" required>
+                <small id="limitLabel" class="limit-text">* ትንሹ የማስገቢያ መጠን 1500 ETB ነው።</small>
+            </div>
+            
+            <div class="form-group">
+                <label>የማረጋገጫ መለያ ቁጥር (Transaction Reference)</label>
+                <input type="text" id="dep-ft" placeholder="የቴሌብር FT ቁጥር ወይም የክሪፕቶ TxID" required>
+            </div>
+            
+            <button type="submit" id="subBtn" class="btn-submit">📩 መረጃውን ለአድሚን ላክ</button>
+        </form>
+        
+        <a href="memberdashbord.html" class="back-btn">⬅️ ወደ ዳሽቦርድ ተመለስ</a>
+    </div>
+
+    <script>
+        // የፕሮጀክትህ ትክክለኛ የ Supabase ሊንኮች
+        const SUPABASE_URL = 'https://jkxkstmtjrszqdsobdfr.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpreGtzdG10anJzenFkc29iZGZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MTg1NjAsImV4cCI6MjA5NDk5NDU2MH0.weNY8wtxWRA1e1dCFWyIk8O1oMU47SURJNoTV53lIeI';
+        
+        // Supabase ክላይንት መፍጠር (v2 ስሪት አጻጻፍ)
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const savedPhone = localStorage.getItem('user_phone');
+
+        // ኮፒ ማድረጊያ ፈንክሽን
+        function copyToClipboard(elementId, btnElement) {
+            const textToCopy = document.getElementById(elementId).innerText;
+            const textArea = document.createElement("textarea");
+            textArea.value = textToCopy;
+            textArea.style.position = "fixed";
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            btnElement.innerText = "Copied! ✅";
+            setTimeout(() => { btnElement.innerText = "Copy 📋"; }, 2000);
+        }
+
+        // የትንሽ መጠን ማሳያ ጽሑፍ መቀየሪያ
+        function updateMinLimit() {
+            const method = document.getElementById('dep-method').value;
+            const limitLabel = document.getElementById('limitLabel');
+            if (method === "USDT (BEP20)") {
+                limitLabel.innerText = "* ትንሹ የማስገቢያ መጠን 10 USDT ነው።";
+            } else {
+                limitLabel.innerText = "* ትንሹ የማስገቢያ መጠን 1500 ETB ነው።";
+            }
+        }
+
+        // መረጃውን ወደ ዳታቤዝ መላኪያ ፈንክሽን
+        async function handleDepositSubmit(event) {
+            event.preventDefault();
+            
+            if (!savedPhone) { 
+                alert("❌ እባክዎ መጀመሪያ ወደ አካውንትዎ ይግቡ!"); 
+                return; 
+            }
+
+            const method = document.getElementById('dep-method').value;
+            const amount = parseFloat(document.getElementById('dep-amount').value);
+            const ftNumber = document.getElementById('dep-ft').value.trim();
+            const btn = document.getElementById('subBtn');
+
+            // የገንዘብ መጠን ማረጋገጫ (Validation)
+            if (method === "USDT (BEP20)" && amount < 10) { 
+                alert("❌ ለ USDT ትንሹ ማስገቢያ መጠን 10 USDT ነው!"); 
+                return; 
+            }
+            if (method !== "USDT (BEP20)" && amount < 1500) { 
+                alert("❌ ለ ብር ትንሹ ማስገቢያ መጠን 1500 ብር ነው!"); 
+                return; 
+            }
+
+            // በተኑን መጫን እንዳይቻል ማድረግ
+            btn.disabled = true; 
+            btn.innerText = "በመላክ ላይ... ⏳";
+
+            try {
+                // መረጃውን ወደ 'deposits' ቴብል ማስገባት
+                const { error } = await _supabase
+                    .from('deposits')
+                    .insert([
+                        {
+                            phone_number: savedPhone,
+                            payment_method: method,
+                            amount: amount,
+                            ft_number: ftNumber,
+                            status: 'pending'
+                        }
+                    ]);
+
+                if (!error) {
+                    alert("🎉 መረጃዎ በተሳካ ሁኔታ ለአድሚን ተልኳል! በአጭር ጊዜ ውስጥ ይረጋገጥልዎታል።");
+                    document.getElementById('depositForm').reset();
+                } else {
+                    alert("❌ ስህተት አጋጥሟል፦ " + error.message);
+                    console.error(error);
+                }
+            } catch (err) {
+                alert("❌ የኔትወርክ ስህተት አጋጥሟል! እባክዎ እንደገና ይሞክሩ።");
+                console.error(err);
+            } finally {
+                btn.disabled = false; 
+                btn.innerText = "📩 መረጃውን ለአድሚን ላክ";
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TNG - Dashboard</title>
+    <style>
+        :root {
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --dark: #0f172a;
+            --glass: rgba(255, 255, 255, 0.08);
+            --icon-bg: rgba(255, 255, 255, 0.12);
+            --success: #2ecc71;
+            --warning: #f1c40f;
+            --purple: #a855f7;
+            --danger: #ff4757;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            color: white;
+            margin: 0;
+            padding: 0;
+            padding-bottom: 120px;
+        }
+
+        /* የላይኛው የዋና ባላንስ ማሳያ ካርድ */
+        .header-card {
+            background: linear-gradient(135deg, var(--secondary), #7c3aed);
+            padding: 30px 20px;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .logout-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            transition: 0.3s;
+        }
+        .logout-btn:hover { background: var(--danger); }
+
+        .balance-label { font-size: 14px; opacity: 0.9; }
+        .balance-value { font-size: 32px; font-weight: bold; margin: 5px 0 15px 0; }
+
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .btn-action {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            transition: 0.3s;
+        }
+
+        .btn-action:hover { background: rgba(255, 255, 255, 0.3); }
+        .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .main-container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* 📢 የማስታወቂያ/የዜና ማሳያ ሳጥን */
+        .news-box {
+            background: linear-gradient(135deg, rgba(241, 196, 15, 0.15), rgba(255, 255, 255, 0.05));
+            border: 1px solid var(--warning);
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .news-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--warning);
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .news-title { font-size: 15px; font-weight: 700; margin-bottom: 5px; color: #fff; }
+        .news-content { font-size: 13px; color: #cbd5e1; line-height: 1.5; }
+
+        /* 📊 የባላንስ መረጃዎች ግሪድ */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        .info-card {
+            background: var(--glass);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .info-title { font-size: 12px; color: #94a3b8; margin-bottom: 5px; }
+        .info-value { font-size: 16px; font-weight: bold; color: white; }
+
+        /* Modern Loading Skeleton Effects */
+        .skeleton {
+            background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.05) 75%);
+            background-size: 200% 100%;
+            animation: loading-glow 1.5s infinite;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        .skeleton-text { width: 80px; height: 18px; }
+        .skeleton-balance { width: 140px; height: 35px; }
+        
+        @keyframes loading-glow {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* 🛠️ ሚስጥራዊ የቻት ሳጥን ስታይል */
+        .support-box {
+            background: var(--glass);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 18px;
+            margin-top: 25px;
+        }
+
+        .support-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* የሜሴጅ መታያ ሳጥን */
+        .chat-container {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            height: 220px;
+            overflow-y: auto;
+            padding: 10px;
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .chat-bubble {
+            max-width: 80%;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        .bubble-user {
+            background: var(--purple);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+        }
+
+        .bubble-admin {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+            border-left: 3px solid var(--primary);
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 8px;
+        }
+
+        .chat-input-wrapper textarea {
+            flex: 1;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+            padding: 10px;
+            color: white;
+            outline: none;
+            font-family: inherit;
+            font-size: 13px;
+            resize: none;
+            height: 38px;
+            box-sizing: border-box;
+        }
+
+        /* Error Retry Wrapper */
+        .error-wrapper {
+            text-align: center;
+            padding: 15px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px dashed var(--danger);
+            border-radius: 12px;
+            margin-bottom: 15px;
+            display: none;
+        }
+        .retry-btn {
+            background: var(--danger);
+            color: white; border: none; padding: 6px 15px; border-radius: 6px; cursor: pointer; font-size: 12px; margin-top: 8px;
+        }
+
+        /* Toast Message UI */
+        .toast {
+            position: fixed;
+            top: 20px; right: -100%;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-left: 5px solid var(--primary);
+            padding: 15px 25px; border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 2000; color: white; font-size: 13px; max-width: 300px;
+        }
+        .toast.show { right: 20px; }
+
+        /* የታችኛው ማውጫ (Navigation Bar) */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; width: 100%;
+            background: #090d16;
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            color: #94a3b8; text-decoration: none; font-size: 12px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+        }
+        .nav-item.active { color: var(--primary); }
+        .nav-icon { font-size: 20px; }
+    </style>
+</head>
+<body>
+
+    <div id="toast" class="toast">መልዕክት</div>
+
+    <div class="header-card">
+        <button class="logout-btn" onclick="handleLogout()">Logout 🚪</button>
+        <div class="balance-label">💵 ጠቅላላ ቀሪ ሂሳብ (Total Balance)</div>
+        <div class="balance-value">
+            <span id="stat-total-balance" class="skeleton skeleton-balance"></span> <span id="etb-txt" style="display:none;">ETB</span>
+        </div>
+        
+        <div class="action-buttons">
+            <button class="btn-action" onclick="handleDeposit()">📥 ብር አስገባ</button>
+            <button class="btn-action" onclick="handleWithdraw()">📤 ብር አውጣ</button>
+        </div>
+    </div>
+
+    <div class="main-container">
+
+        <div id="error-box" class="error-wrapper">
+            <div id="error-msg" style="font-size: 13px; color: var(--danger);">የግንኙነት ስህተት አጋጥሟል!</div>
+            <button class="retry-btn" onclick="retryLoading()">እንደገና ሞክር 🔄</button>
+        </div>
+
+        <div class="news-box">
+            <div class="news-header">📢 የአድሚን ወቅታዊ መረጃ (Latest Update)</div>
+            <div id="live-news-box">
+                <div class="skeleton" style="width:100%; height:15px; margin-bottom:5px;"></div>
+                <div class="skeleton" style="width:85%; height:12px;"></div>
+            </div>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-card" style="border-left: 3px solid var(--warning);">
+                <div class="info-title">⭐ የአሁን VIP ደረጃ</div>
+                <div class="info-value" id="db-vip-level"><span class="skeleton skeleton-text"></span></div>
+            </div>
+            
+            <div class="info-card" style="border-left: 3px solid var(--success);">
+                <div class="info-title">📈 የዛሬ ዕለታዊ ትርፍ (Today Earning)</div>
+                <div class="info-value" id="stat-today-earning"><span class="skeleton skeleton-text"></span></div>
+            </div>
+
+            <div class="info-card" style="border-left: 3px solid var(--primary);">
+                <div class="info-title">👥 የሪፈራል ትርፍ (Referral Balance)</div>
+                <div class="info-value" id="stat-referral-balance"><span class="skeleton skeleton-text"></span></div>
+            </div>
+
+            <div class="info-card" style="border-left: 3px solid var(--danger);">
+                <div class="info-title">💰 ሊወጣ የሚችል (Withdrawal Balance)</div>
+                <div class="info-value" id="stat-withdrawal-balance"><span class="skeleton skeleton-text"></span></div>
+            </div>
+        </div>
+
+        <div>
+            <button class="btn-action" style="width: 100%; background: linear-gradient(to right, var(--primary), var(--secondary)); color: #000; border-radius: 12px; padding: 12px;" onclick="handleInvite()">🔗 የጋበዣ ሊንክ ኮፒ አድርግ (Invite Link)</button>
+        </div>
+
+        <div class="support-box">
+            <div class="support-title">🔒 ሚስጥራዊ የድጋፍ መስመር (Secret Chat Support)</div>
+            <p style="font-size: 11px; color: #94a3b8; margin: 0 0 10px 0;">ሚስጥር ቁጥር ሲጠፋብዎ ወይም ማንኛውም ጥያቄ ሲኖርዎት እዚህ ይጻፉ፤ ለአድሚን ብቻ በቀጥታ ይደርሳል።</p>
+            
+            <div class="chat-container" id="chatContainer">
+                <div style="text-align:center; font-size:11px; color:var(--text-muted); margin-top:20px;">መልዕክቶችን በመጫን ላይ...</div>
+            </div>
+
+            <form id="chatForm" onsubmit="handleSendSecretMessage(event)">
+                <div class="chat-input-wrapper">
+                    <textarea id="chat-message" placeholder="መልዕክትዎን እዚህ ይጻፉ..." required></textarea>
+                    <button type="submit" id="chat-send-btn" class="btn-action" style="background: var(--purple); border-radius: 8px; padding: 0 15px; font-size: 13px;">ላክ 📩</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="#" class="nav-item active"><span class="nav-icon">🏠</span>መነሻ</a>
+        <a href="vipcenter.html" class="nav-item"><span class="nav-icon">📊</span>VIP</a>
+        <a href="task.html" class="nav-item"><span class="nav-icon">📝</span>ታስክ</a>
+        <a href="profile.html" class="nav-item"><span class="nav-icon">👤</span>እኔ</a>
+    </nav>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://jkxkstmtjrszqdsobdfr.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpreGtzdG10anJzenFkc29iZGZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MTg1NjAsImV4cCI6MjA5NDk5NDU2MH0.weNY8wtxWRA1e1dCFWyIk8O1oMU47SURJNoTV53lIeI';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const savedPhone = localStorage.getItem('user_phone');
+        let refreshInterval;
+        let chatSubscription;
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.style.borderLeftColor = type === 'success' ? 'var(--success)' : 'var(--danger)';
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3500);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if(!savedPhone) {
+                window.location.href = "index.html";
+                return;
+            }
+            initDashboard();
+            refreshInterval = setInterval(loadUserData, 10000);
+        });
+
+        function initDashboard() {
+            document.getElementById('error-box').style.display = 'none';
+            loadUserData();
+            loadLiveAdminNews();
+            loadSecretChat();
+            setupRealtimeChat();
+        }
+
+        function retryLoading() {
+            initDashboard();
+        }
+
+        async function loadUserData() {
+            try {
+                const { data, error } = await _supabase.from('users').select('*').eq('phone_number', savedPhone).maybeSingle();
+                
+                if(error) throw error;
+
+                if(data) {
+                    if(data.status === 'blocked') {
+                        showToast("❌ አካውንትዎ በአድሚን ታግዷል!", "error");
+                        setTimeout(handleLogout, 2000);
+                        return;
+                    }
+
+                    const totalBalance = parseFloat(data.balance || 0);
+                    const balEl = document.getElementById('stat-total-balance');
+                    balEl.classList.remove('skeleton', 'skeleton-balance');
+                    balEl.innerText = totalBalance.toFixed(2);
+                    document.getElementById('etb-txt').style.display = 'inline';
+                    
+                    const currentVIP = data.vip_level || 'VIP 0';
+                    document.getElementById('db-vip-level').innerHTML = `<span style="color:var(--warning);">${currentVIP}</span>`;
+
+                    const { data: completedTasks } = await _supabase.from('user_tasks').select('payout').eq('phone_number', savedPhone).eq('status', 'completed');
+                    let todayProfit = 0;
+                    if(completedTasks) {
+                        todayProfit = completedTasks.reduce((sum, t) => sum + parseFloat(t.payout || 0), 0);
+                    }
+                    document.getElementById('stat-today-earning').innerHTML = `<span style="color:var(--success);">${todayProfit.toFixed(2)} ETB</span>`;
+
+                    const refBalance = parseFloat(data.referral_balance || 0);
+                    document.getElementById('stat-referral-balance').innerHTML = `<span style="color:var(--primary);">${refBalance.toFixed(2)} ETB</span>`;
+
+                    document.getElementById('stat-withdrawal-balance').innerHTML = `<span style="color:var(--danger);">${totalBalance.toFixed(2)} ETB</span>`;
+                    document.getElementById('error-box').style.display = 'none';
+                }
+            } catch (err) {
+                document.getElementById('error-box').style.display = 'block';
+                document.getElementById('error-msg').innerText = "የባላንስ መረጃዎችን ማደስ አልተቻለም (Network Offline)";
+            }
+        }
+
+        async function loadLiveAdminNews() {
+            try {
+                const { data, error } = await _supabase.from('news').select('*').order('id', { ascending: false }).limit(1).maybeSingle();
+
+                const newsContainer = document.getElementById('live-news-box');
+                if(!error && data && data.title && data.message) {
+                    newsContainer.innerHTML = `
+                        <div class="news-title">🔥 ${data.title}</div>
+                        <div class="news-content">${data.message}</div>
+                    `;
+                } else {
+                    newsContainer.innerHTML = `
+                        <div class="news-title">🔥 TNG</div>
+                        <div class="news-content">Welcome to Trust New Generation</div>
+                    `;
+                }
+            } catch(e) {
+                const newsContainer = document.getElementById('live-news-box');
+                newsContainer.innerHTML = `
+                    <div class="news-title">🔥 TNG</div>
+                    <div class="news-content">Welcome to Trust New Generation</div>
+                `;
+            }
+        }
+
+        async function loadSecretChat() {
+            try {
+                const { data, error } = await _supabase
+                    .from('support_tickets')
+                    .select('*')
+                    .eq('phone_number', savedPhone)
+                    .order('id', { ascending: true });
+
+                if (error) throw error;
+
+                const container = document.getElementById('chatContainer');
+                if (!data || data.length === 0) {
+                    container.innerHTML = `<div style="text-align:center; font-size:12px; color:var(--text-muted); margin-top:80px;">ከአድሚን ጋር ሚስጥራዊ ውይይት ለመጀመር መልዕክት ይጻፉ።</div>`;
+                    return;
+                }
+
+                let chatHTML = '';
+                data.forEach(ticket => {
+                    if (ticket.message) {
+                        chatHTML += `<div class="chat-bubble bubble-user">${ticket.message}</div>`;
+                    }
+                    if (ticket.reply) {
+                        chatHTML += `<div class="chat-bubble bubble-admin">${ticket.reply}</div>`;
+                    }
+                });
+
+                container.innerHTML = chatHTML;
+                container.scrollTop = container.scrollHeight;
+            } catch (e) {
+                console.log("የቻት ግንኙነት ችግር");
+            }
+        }
+
+        function setupRealtimeChat() {
+            chatSubscription = _supabase
+                .channel('realtime-tickets')
+                .on('postgres_changes', { 
+                    event: '*', 
+                    schema: 'public', 
+                    table: 'support_tickets' 
+                }, (payload) => {
+                    if (payload.new && payload.new.phone_number === savedPhone) {
+                        loadSecretChat();
+                    }
+                })
+                .subscribe();
+        }
+
+        async function handleSendSecretMessage(event) {
+            event.preventDefault();
+            const msgInput = document.getElementById('chat-message');
+            const message = msgInput.value.trim();
+            const sendBtn = document.getElementById('chat-send-btn');
+
+            if(!message) return;
+
+            sendBtn.disabled = true;
+
+            try {
+                const { error } = await _supabase.from('support_tickets').insert([
+                    { phone_number: savedPhone, subject: 'የአካውንት / PIN ችግር', message: message, status: 'open' }
+                ]);
+
+                if(!error) {
+                    msgInput.value = '';
+                    loadSecretChat();
+                } else {
+                    showToast("❌ መልዕክቱ አልተላከም፦ " + error.message, "error");
+                }
+            } catch(e) {
+                showToast("የኔትወርክ ስህተት አጋጥሟል!", "error");
+            } finally {
+                sendBtn.disabled = false;
+            }
+        }
+
+        function handleDeposit() { window.location.href = "deposit.html"; }
+
+        function handleWithdraw() {
+            const now = new Date();
+            const currentHour = now.getHours(); 
+
+            if (currentHour < 6 || currentHour >= 23) {
+                showToast("❌ የመውጫ ሰዓት ከጠዋቱ 12:00 ሰዓት (6:00 AM) እስከ ምሽቱ 5:00 ሰዓት (11:00 PM) ብቻ ነው!", "error");
+                return;
+            }
+            window.location.href = "withdrawal.html";
+        }
+
+        function handleInvite() {
+            try {
+                const inviteLink = `${window.location.origin}/index.html?ref=${savedPhone}`;
+                navigator.clipboard.writeText(inviteLink).then(() => {
+                    showToast("🔗 የጋበዣ ሊንክዎ በተሳካ ሁኔታ ኮፒ ሆኗል!");
+                }).catch(() => {
+                    const dummy = document.createElement("input");
+                    document.body.appendChild(dummy);
+                    dummy.value = inviteLink;
+                    dummy.select();
+                    document.execCommand("copy");
+                    document.body.removeChild(dummy);
+                    showToast("🔗 የጋበዣ ሊንክዎ ኮፒ ሆኗል!");
+                });
+            } catch (err) {
+                showToast("ኮፒ ማድረግ አልተቻለም፣ እባክዎ በእጅ ኮፒ ያድርጉ!", "error");
+            }
+        }
+
+        function handleLogout() {
+            clearInterval(refreshInterval);
+            if (chatSubscription) _supabase.removeChannel(chatSubscription);
+            localStorage.clear();
+            showToast("በሰላም ወጥተዋል! ይመልሱልን።");
+            setTimeout(() => {
+                window.location.href = "index.html";
+            }, 1500);
+        }
+    </script>
+</body>
+</html>

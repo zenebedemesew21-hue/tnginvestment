@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TNG - VIP Center</title>
+    <style>
+        :root {
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --dark: #0f172a;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --gold: #f1c40f;
+            --glass: rgba(255, 255, 255, 0.08);
+            --coming-soon: #64748b;
+            --success: #2ecc71;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0f172a;
+            color: white;
+            margin: 0;
+            padding: 20px;
+            padding-bottom: 120px;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .main-wrapper {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .header h1 {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 28px;
+            margin: 0;
+        }
+
+        .balance-display {
+            background: var(--glass);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 12px 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            text-align: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .balance-display span {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .vip-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .vip-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            transition: 0.3s;
+            box-sizing: border-box;
+        }
+
+        .vip-card.active-user-vip {
+            border-color: var(--gold);
+            box-shadow: 0 0 15px rgba(241, 196, 15, 0.3);
+        }
+
+        .vip-card.coming-soon-card {
+            border: 1px dashed rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.02);
+            opacity: 0.6;
+        }
+
+        .badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: var(--gold);
+            color: var(--dark);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .coming-soon-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #e2e8f0;
+            color: #0f172a;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 10px;
+            text-transform: uppercase;
+        }
+
+        .vip-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .price {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .price span {
+            font-size: 14px;
+            font-weight: 400;
+            color: #94a3b8;
+        }
+
+        .upgrade-notice {
+            font-size: 11px;
+            color: var(--gold);
+            margin-top: -10px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .details {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 20px 0;
+            text-align: left;
+        }
+
+        .details li {
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: #cbd5e1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .details li::before {
+            content: "✓";
+            color: #2ecc71;
+            font-weight: bold;
+        }
+
+        .coming-soon-card .details li::before {
+            content: "🔒";
+            color: var(--coming-soon);
+        }
+
+        .buy-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            color: var(--dark);
+            border: none;
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .buy-btn:disabled {
+            background: #475569 !important;
+            color: #94a3b8 !important;
+            cursor: not-allowed;
+            box-shadow: none !important;
+        }
+
+        .coming-btn {
+            width: 100%;
+            background: #334155;
+            color: #94a3b8;
+            border: none;
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: not-allowed;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #1e293b;
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            z-index: 100;
+        }
+
+        .nav-item { text-align: center; color: #94a3b8; font-size: 11px; text-decoration: none; width: 25%; }
+        .nav-item.active { color: var(--primary); }
+        .nav-icon { font-size: 20px; display: block; margin-bottom: 2px; }
+    </style>
+</head>
+<body>
+
+    <div class="main-wrapper">
+        <div class="header">
+            <h1>TNG VIP Center</h1>
+        </div>
+
+        <div class="balance-display">
+            የአሁኑ ባላንስዎ: <span id="user-balance">200.00</span> ETB
+        </div>
+
+        <div class="vip-container" id="vip-cards-wrapper">
+            </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="memberdashbord.html" class="nav-item"><span class="nav-icon">🏠</span>መነሻ</a>
+        <a href="lastvipcenter.html" class="nav-item active"><span class="nav-icon">📊</span>VIP</a>
+        <a href="task.html" class="nav-item"><span class="nav-icon">📝</span>ታስክ</a>
+        <a href="profile.html" class="nav-item"><span class="nav-icon">👤</span>እኔ</a>
+    </nav>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // --- 🔑 SUPABASE CONFIGURATION (የሱፓቤዝ ቅንብር) ---
+        const SUPABASE_URL = 'https://jkxkstmtjrszqdsobdfr.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpreGtzdG10anJzenFkc29iZGZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MTg1NjAsImV4cCI6MjA5NDk5NDU2MH0.weNY8wtxWRA1e1dCFWyIk8O1oMU47SURJNoTV53lIeI';
+        
+        let _supabase;
+        const savedPhone = localStorage.getItem('user_phone');
+        let currentBalance = 200.00; 
+        let currentVIP = "VIP 0";
+
+        // የቪአይፒ መረጃዎች ዝርዝር
+        const vipPlans = [
+            { name: "VIP 0", price: 0, level: 0, profit: "0% (0 ETB)", monthly: "0 ETB", desc: "የምዝገባ ቦነስ ማሳያ ደረጃ" },
+            { name: "VIP 1", price: 1500, level: 1, profit: "5% (75 ETB)", monthly: "2,250 ETB" },
+            { name: "VIP 2", price: 3000, level: 2, profit: "6% (180 ETB)", monthly: "5,400 ETB" },
+            { name: "VIP 3", price: 6000, level: 3, profit: "7% (420 ETB)", monthly: "12,600 ETB" },
+            { name: "VIP 4", price: 12000, level: 4, profit: "8% (960 ETB)", monthly: "28,800 ETB" },
+            { name: "VIP 5", price: 24000, level: 5, profit: "9% (2,160 ETB)", monthly: "64,800 ETB" },
+            { name: "VIP 6", price: 48000, level: 6, profit: "10% (4,800 ETB)", monthly: "144,000 ETB" },
+            { name: "VIP 7", price: 96000, level: 7, profit: "11% (10,560 ETB)", monthly: "316,800 ETB" }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof supabase !== 'undefined') {
+                _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            }
+            loadUserData();
+        });
+
+        async function loadUserData() {
+            if(!savedPhone || !_supabase) {
+                renderVIPCards();
+                return;
+            }
+
+            try {
+                const { data, error } = await _supabase
+                    .from('users')
+                    .select('*')
+                    .eq('phone_number', savedPhone);
+
+                if (!error && data && data.length > 0) {
+                    const userRow = data[0];
+                    currentBalance = parseFloat(userRow.balance) || 200.00;
+                    currentVIP = userRow.vip_level || "VIP 0";
+                }
+                renderVIPCards();
+            } catch (err) { 
+                renderVIPCards();
+            }
+        }
+
+        function renderVIPCards() {
+            const balEl = document.getElementById('user-balance');
+            if(balEl) balEl.innerText = currentBalance.toFixed(2);
+
+            const wrapper = document.getElementById('vip-cards-wrapper');
+            wrapper.innerHTML = '';
+
+            const currentUserPlan = vipPlans.find(p => p.name === currentVIP) || vipPlans[0];
+            const currentLevelNum = currentUserPlan.level;
+            const currentPricePaid = currentUserPlan.price;
+
+            vipPlans.forEach(plan => {
+                const card = document.createElement('div');
+                card.className = 'vip-card';
+                if(plan.name === currentVIP) card.className += ' active-user-vip';
+
+                let finalPrice = plan.price;
+                let isUpgrade = false;
+                let btnText = "አሁኑኑ ይግዙ (Buy Now)";
+                let isBtnDisabled = false;
+
+                if (plan.level === currentLevelNum) {
+                    btnText = "የተገዛ / ንቁ ደረጃ";
+                    isBtnDisabled = true;
+                } else if (plan.level < currentLevelNum) {
+                    btnText = "የተቆለፈ ደረጃ";
+                    isBtnDisabled = true;
+                } else if (plan.level > currentLevelNum) {
+                    // የዋጋ ልዩነት ስሌት (የሚገዛው - የነበረበት)
+                    finalPrice = plan.price - currentPricePaid;
+                    isUpgrade = true;
+                    btnText = "ደረጃ ማሻሻል (Upgrade)";
+                }
+
+                card.innerHTML = `
+                    <div class="badge" style="display: ${plan.name === currentVIP ? 'block' : 'none'}">አሁን ያሉበት</div>
+                    <div class="vip-title">${plan.name}</div>
+                    <div class="price">${finalPrice.toLocaleString()} <span>ETB</span></div>
+                    ${isUpgrade ? `<div class="upgrade-notice">የደረጃ ማሻሻያ ቅናሽ ተደርጓል!</div>` : ''}
+                    <ul class="details">
+                        <li>ዕለታዊ ትርፍ: ${plan.profit}</li>
+                        ${plan.level > 0 ? `<li>ወርሃዊ ገቢ: ${plan.monthly}</li>` : ''}
+                        <li>ቆይታ: 365 ቀናት</li>
+                        ${plan.desc ? `<li>${plan.desc}</li>` : ''}
+                    </ul>
+                    <button class="buy-btn" id="btn-${plan.name.replace(' ', '-')}" ${isBtnDisabled ? 'disabled' : ''} onclick="buyVIP('${plan.name}', ${finalPrice})">${btnText}</button>
+                `;
+                wrapper.appendChild(card);
+            });
+
+            addComingSoonCards(wrapper);
+        }
+
+        function addComingSoonCards(wrapper) {
+            const soons = [
+                { name: "VIP 8", benefit: "ከፍተኛ ዕለታዊ ገቢ" },
+                { name: "VIP 9", benefit: "ልዩ የቪአይፒ ጥቅማጥቅሞች" },
+                { name: "VIP 10", benefit: "የመጨረሻው ከፍተኛ ደረጃ" }
+            ];
+            soons.forEach(s => {
+                const card = document.createElement('div');
+                card.className = 'vip-card coming-soon-card';
+                card.innerHTML = `
+                    <div class="coming-soon-badge">🔒 Soon</div>
+                    <div class="vip-title" style="color: var(--coming-soon);">${s.name}</div>
+                    <div class="price" style="color: var(--coming-soon);">🔒 <span>ETB</span></div>
+                    <ul class="details">
+                        <li style="color: #64748b;">ዕለታዊ ትርፍ: በቅርብ ቀን...</li>
+                        <li style="color: #64748b;">${s.benefit}</li>
+                    </ul>
+                    <button class="coming-btn" disabled>በቅርብ ቀን (Coming Soon)</button>
+                `;
+                wrapper.appendChild(card);
+            });
+        }
+
+        async function buyVIP(vipName, finalPrice) {
+            if(!savedPhone) {
+                alert("እባክዎ መጀመሪያ በስልክ ቁጥርዎ ይግቡ!");
+                return;
+            }
+            if(!_supabase) return;
+
+            if(currentBalance < finalPrice) {
+                alert(`ደረጃውን ለማሻሻል በቂ ባላንስ የለዎትም! የሚያስፈልገው የልዩነት መጠን: ${finalPrice} ETB ነው። እባክዎ መጀመሪያ ዴፖዚት ያድርጉ።`);
+                return;
+            }
+
+            const confirmPurchase = confirm(`${vipName} ደረጃን በልዩነት ዋጋ ${finalPrice} ETB ለመግዛት እርግጠኛ ነዎት?`);
+            if(!confirmPurchase) return;
+
+            const newBalance = currentBalance - finalPrice;
+            
+            // የቪአይፒ ማለቂያ ቀንን ከዛሬ ጀምሮ 365 ቀን ማድረግ
+            const expiryDate = new Date();
+            expiryDate.setDate(expiryDate.getDate() + 365);
+            const expiryStr = expiryDate.toISOString().split('T')[0];
+
+            try {
+                // 1. የተጠቃሚውን መረጃ ማደስ
+                const { error: userError } = await _supabase
+                    .from('users')
+                    .update({ 
+                        balance: newBalance, 
+                        vip_level: vipName,
+                        vip_expiry: expiryStr 
+                    })
+                    .eq('phone_number', savedPhone);
+
+                if(!userError) {
+                    // 2. በቪአይፒ ግዢ ታሪክ ላይ መመዝገብ
+                    await _supabase
+                        .from('vip_purchase_logs')
+                        .insert([{
+                            phone_number: savedPhone,
+                            vip_level: vipName,
+                            amount_paid: finalPrice,
+                            expiry_date: expiryStr
+                        }]);
+
+                    alert(`እንኳን ደስ አለዎት! ወደ ${vipName} ደረጃ በ ${finalPrice} ETB በተሳካ ሁኔታ አሻሽለዋል።`);
+                    loadUserData();
+                } else {
+                    alert("ግዢው አልተሳካም! ስህተት፦ " + userError.message);
+                }
+            } catch (err) { 
+                alert("የግንኙነት ስህተት አጋጥሟል!"); 
+            }
+        }
+    </script>
+</body>
+</html>

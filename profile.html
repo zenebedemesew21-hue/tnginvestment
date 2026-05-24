@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TNG - Profile Center</title>
+    <style>
+        :root {
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --dark: #0f172a;
+            --glass: rgba(255, 255, 255, 0.08);
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --danger: #ff4757;
+            --success: #2ecc71;
+            --warning: #f1c40f;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0f172a;
+            color: white;
+            margin: 0;
+            padding: 20px;
+            padding-bottom: 120px;
+            min-height: 100vh;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+        }
+
+        .main-wrapper {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .profile-header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 20px;
+        }
+
+        .avatar-circle {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--secondary), #7c3aed);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 36px;
+            margin: 0 auto 12px auto;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .phone-display {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin: 0;
+        }
+
+        .vip-badge {
+            display: inline-block;
+            background: rgba(0, 242, 254, 0.15);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-top: 6px;
+        }
+
+        .info-group-title {
+            font-size: 14px;
+            color: #94a3b8;
+            margin: 20px 0 10px 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 14px;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-row span:first-child {
+            color: #cbd5e1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-row span:last-child {
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .bank-form {
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .input-group {
+            margin-bottom: 12px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            color: #cbd5e1;
+            margin-bottom: 5px;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 10px;
+            padding: 10px;
+            color: white;
+            font-size: 13px;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary);
+        }
+
+        .save-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            color: var(--dark);
+            border: none;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .save-btn:disabled {
+            background: #475569;
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .logout-btn {
+            width: 100%;
+            background: rgba(255, 71, 87, 0.1);
+            border: 1px solid rgba(255, 71, 87, 0.2);
+            color: var(--danger);
+            border-radius: 14px;
+            padding: 14px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 15px;
+        }
+        .logout-btn:hover { background: rgba(255, 71, 87, 0.2); }
+
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.1);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border-left-color: var(--dark);
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .error-banner {
+            background: rgba(255, 71, 87, 0.15);
+            border: 1px solid var(--danger);
+            color: #ff4757;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-bottom: 15px;
+            display: none;
+            text-align: center;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #1e293b;
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            z-index: 100;
+        }
+
+        .nav-item { text-align: center; color: #94a3b8; font-size: 11px; text-decoration: none; width: 25%; transition: 0.2s;}
+        .nav-item:hover { color: var(--secondary); }
+        .nav-item.active { color: var(--primary); font-weight: bold;}
+        .nav-icon { font-size: 20px; display: block; margin-bottom: 2px; }
+    </style>
+</head>
+<body>
+
+    <div class="main-wrapper">
+        <div id="errorBanner" class="error-banner"></div>
+
+        <div class="profile-header">
+            <div class="avatar-circle">👤</div>
+            <h2 class="phone-display" id="prof-phone">---</h2>
+            <div class="vip-badge" id="prof-vip">VIP 0</div>
+        </div>
+
+        <div class="info-group-title">💰 የሒሳብ መረጃ</div>
+        <div class="info-card">
+            <div class="info-row">
+                <span>💵 ጠቅላላ ባላንስ</span>
+                <span id="prof-balance">200.00 ETB</span>
+            </div>
+            <div class="info-row">
+                <span>📈 የምዝገባ ቦነስ</span>
+                <span>200.00 ETB</span>
+            </div>
+        </div>
+
+        <div class="info-group-title">🏦 የተገናኘ የገንዘብ ማውጫ አካውንት</div>
+        <div class="info-card">
+            <div id="account-status-view" style="padding: 15px 20px; font-size: 14px; color: #94a3b8; text-align: center; line-height: 1.6;">
+                የመውጫ አካውንት አልተገናኘም! እባክዎ ከታች ባለው ፎርም ያገናኙ።
+            </div>
+            <div class="bank-form">
+                <form id="linkBankForm" onsubmit="handleLinkBank(event)">
+                    <div class="input-group">
+                        <label for="link-bank-name">የክፍያ/የባንክ አማራጭ</label>
+                        <select id="link-bank-name" required onchange="adjustValidationPlaceholder()">
+                            <option value="">-- ይምረጡ --</option>
+                            <option value="Telebirr">telebirr (ቴሌብር)</option>
+                            <option value="M-Pesa">m-pesa (ኤም-ፔሳ)</option>
+                            <option value="CBE">የኢትዮጵያ ንግድ ባንክ (CBE)</option>
+                            <option value="Dashen">ዳሽን ባንክ (Dashen)</option>
+                            <option value="Awash">አዋሽ ባንክ (Awash)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="link-account-name">የአካውንት ባለቤት ሙሉ ስም</label>
+                        <input type="text" id="link-account-name" placeholder="ምሳሌ: አበበ በቀለ" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="link-account-num">የአካውንት / የስልክ ቁጥር</label>
+                        <input type="text" id="link-account-num" placeholder="ቁጥር ያስገቡ" required>
+                    </div>
+                    <button type="submit" class="save-btn" id="saveBtn">
+                        <span id="btnText">አካውንት አገናኝ (Link Account)</span>
+                        <div class="spinner" id="btnSpinner"></div>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="info-group-title">🔒 የደህንነት መረጃ</div>
+        <div class="info-card">
+            <div class="info-row">
+                <span>📱 የአካውንት ሁኔታ</span>
+                <span style="color: #2ecc71;">የተረጋገጠ (Active)</span>
+            </div>
+            <div class="info-row">
+                <span>🔑 ማሻሻያ እና ማስተካከያ</span>
+                <span style="color: #94a3b8; font-size: 12px; font-weight: normal;">በአድሚን ብቻ</span>
+            </div>
+        </div>
+
+        <button class="logout-btn" onclick="handleLogout()">🚪 ከአካውንት ውጣ (Logout)</button>
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="memberdashbord.html" class="nav-item"><span class="nav-icon">🏠</span>መነሻ</a>
+        <a href="lastvipcenter.html" class="nav-item"><span class="nav-icon">📊</span>VIP</a>
+        <a href="task.html" class="nav-item"><span class="nav-icon">📝</span>ታስክ</a>
+        <a href="profile.html" class="nav-item active"><span class="nav-icon">👤</span>እኔ</a>
+    </nav>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://jkxkstmtjrszqdsobdfr.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpreGtzdG10anJzenFkc29iZGZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MTg1NjAsImV4cCI6MjA5NDk5NDU2MH0.weNY8wtxWRA1e1dCFWyIk8O1oMU47SURJNoTV53lIeI';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const savedPhone = localStorage.getItem('user_phone');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if(!savedPhone) {
+                window.location.href = "index.html";
+                return;
+            }
+            document.getElementById('prof-phone').innerText = savedPhone;
+            loadUserProfile();
+        });
+
+        function adjustValidationPlaceholder() {
+            const bank = document.getElementById('link-bank-name').value;
+            const numInput = document.getElementById('link-account-num');
+            if(bank === "Telebirr" || bank === "M-Pesa") {
+                numInput.placeholder = "የስልክ ቁጥር ያስገቡ (ምሳሌ: 0912345678)";
+            } else if(bank === "CBE") {
+                numInput.placeholder = "የ 13 አሃዝ አካውንት ቁጥር (ምሳሌ: 1000123456789)";
+            } else {
+                numInput.placeholder = "አካውንት ቁጥር ያስገቡ";
+            }
+        }
+
+        function maskAccountNumber(num) {
+            if(!num || num.length < 4) return num;
+            const lastFour = num.slice(-4);
+            const maskedSection = "*".repeat(num.length - 4);
+            return maskedSection + lastFour;
+        }
+
+        async function loadUserProfile() {
+            showError(''); 
+            try {
+                const { data, error } = await _supabase
+                    .from('users')
+                    .select('*')
+                    .eq('phone_number', savedPhone);
+
+                if (error) throw error;
+
+                if (data && data.length > 0) {
+                    const user = data[0];
+                    document.getElementById('prof-balance').innerText = parseFloat(user.balance).toFixed(2) + " ETB";
+                    if(user.vip_level) {
+                        document.getElementById('prof-vip').innerText = user.vip_level;
+                    }
+
+                    if(user.bank_name && user.account_number) {
+                        const statusView = document.getElementById('account-status-view');
+                        const hiddenAccNum = maskAccountNumber(user.account_number);
+                        
+                        statusView.innerHTML = `✅ <strong>የተገናኘ አካውንት፦</strong><br>
+                                                የክፍያ መንገድ: <span style="color:#fff;">${user.bank_name}</span><br>
+                                                ስም: <span style="color:#fff;">${user.account_name}</span><br>
+                                                ቁጥር: <span style="color:var(--primary); font-family:monospace; letter-spacing:1px;">${hiddenAccNum}</span>`;
+                        statusView.style.color = "#2ecc71";
+                        
+                        document.getElementById('link-bank-name').value = user.bank_name;
+                        document.getElementById('link-account-name').value = user.account_name || '';
+                        document.getElementById('link-account-num').value = user.account_number;
+                        adjustValidationPlaceholder();
+                    }
+                } else {
+                    // ዳታቤዝ ላይ ቁጥሩ ባይኖርም እንኳ በሰላም 200 ETB ብሎ ገጹን ይክፈት
+                    document.getElementById('prof-balance').innerText = "200.00 ETB";
+                    document.getElementById('prof-vip').innerText = "VIP 0";
+                }
+            } catch (err) {
+                console.log(err);
+            }
+        }
+
+        async function handleLinkBank(event) {
+            event.preventDefault();
+            const bankName = document.getElementById('link-bank-name').value;
+            const accName = document.getElementById('link-account-name').value.trim();
+            const accNum = document.getElementById('link-account-num').value.trim();
+
+            if(bankName === "Telebirr" || bankName === "M-Pesa") {
+                const phoneRegex = /^(09|07)\d{8}$/;
+                if(!phoneRegex.test(accNum)) {
+                    alert("⚠️ እባክዎ ትክክለኛ የኢትዮጵያ ስልክ ቁጥር ያስገቡ! (ምሳሌ፦ 0912345678)");
+                    return;
+                }
+            } else if(bankName === "CBE") {
+                if(accNum.length !== 13 || isNaN(accNum)) {
+                    alert("⚠️ የኢትዮጵያ ንግድ ባንክ (CBE) አካውንት ቁጥር በትክክል 13 አሃዝ መሆን አለበት!");
+                    return;
+                }
+            } else {
+                if(accNum.length < 8 || isNaN(accNum)) {
+                    alert("⚠️ እባክዎ ትክክለኛ የአካውንት ቁጥር ያስገቡ!");
+                    return;
+                }
+            }
+
+            setLoadingState(true);
+            showError('');
+
+            try {
+                // መጀመሪያ ተጠቃሚው ዳታቤዝ ውስጥ መኖሩን ቼክ ማድረግ
+                const { data: userCheck } = await _supabase
+                    .from('users')
+                    .select('*')
+                    .eq('phone_number', savedPhone);
+
+                if(!userCheck || userCheck.length === 0) {
+                    // ከሌለ እራሱ ኮዱ በደህና ሁኔታ እንዲፈጥረውና id ስህተት እንዳያመጣ በዘፈቀደ ትልቅ ID እንስጠው
+                    const randomId = Math.floor(Math.random() * 900000) + 100000;
+                    await _supabase.from('users').insert({ 
+                        id: randomId,
+                        phone_number: savedPhone, 
+                        balance: 200, 
+                        vip_level: 'VIP 0',
+                        bank_name: bankName,
+                        account_name: accName,
+                        account_number: accNum
+                    });
+                    alert("🎉 የገንዘብ ማውጫ አካውንትዎ በተሳካ ሁኔታ ተገናኝቷል!");
+                    await loadUserProfile();
+                    return;
+                }
+
+                // ካለ ደግሞ ቀጥታ ያድሰው
+                const { error } = await _supabase
+                    .from('users')
+                    .update({
+                        bank_name: bankName,
+                        account_name: accName,
+                        account_number: accNum
+                    })
+                    .eq('phone_number', savedPhone);
+
+                if(!error) {
+                    alert("🎉 የገንዘብ ማውጫ አካውንትዎ በተሳካ ሁኔታ ተገናኝቷል!");
+                    await loadUserProfile();
+                } else {
+                    throw error;
+                }
+            } catch (err) {
+                showError("አካውንቱን ማገናኘት አልተቻለም፦ " + (err.message || "የግንኙነት ስህተት አጋጥሟል"));
+            } finally {
+                setLoadingState(false);
+            }
+        }
+
+        function setLoadingState(isLoading) {
+            const btn = document.getElementById('saveBtn');
+            const txt = document.getElementById('btnText');
+            const spinner = document.getElementById('btnSpinner');
+
+            if(isLoading) {
+                btn.disabled = true;
+                txt.innerText = "በማገናኘት ላይ... ";
+                spinner.style.display = "inline-block";
+            } else {
+                btn.disabled = false;
+                txt.innerText = "አካውንት አገናኝ (Link Account)";
+                spinner.style.display = "none";
+            }
+        }
+
+        function showError(msg) {
+            const banner = document.getElementById('errorBanner');
+            if(msg) {
+                banner.innerText = msg;
+                banner.style.display = "block";
+            } else {
+                banner.style.display = "none";
+            }
+        }
+
+        function handleLogout() {
+            const confirmLogout = confirm("🚪 እርግጠኛ ነዎት ከአካውንትዎ መውጣት ይፈልጋሉ?");
+            if (confirmLogout) {
+                localStorage.removeItem('user_phone');
+                localStorage.removeItem(`yt_subscribed_${savedPhone}`);
+                window.location.href = "index.html";
+            }
+        }
+    </script>
+</body>
+</html>
