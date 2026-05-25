@@ -1,7 +1,1 @@
-/admin              /admin.html              200
-/deposit            /deposit.html            200
-/memberdashboard    /memberdashboard.html    200
-/profile            /profile.html            200
-/task               /task.html               200
-/vipcenter          /vipcenter.html          200
-/withdraw           /withdraw.html           200
+/    /memberdashboard.html    200
