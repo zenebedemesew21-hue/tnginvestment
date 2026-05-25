@@ -1,5 +1,13 @@
-# 1. ያለ .html ለሚጻፉ ሊንኮች
-/* /:splat.html    200
+/home               /memberdashboard.html    200
+/memberdashboard    /memberdashboard.html    200
+/vip                /vipcenter.html          200
+/vipcenter          /vipcenter.html          200
+/task               /task.html               200
+/deposit            /deposit.html            200
+/withdraw           /withdraw.html           200
+/withdrawal         /withdraw.html           200
+/profile            /profile.html            200
+/admin              /admin.html              200
 
-# 2. ቀጥታ በ .html ለሚከፈቱ እና ለዋናው ገጽ
-/* /* 200
+# ይህ መስመር ማንኛውንም ቀሪ ስህተት ወደ መግቢያ ገጽ ያዞራል
+/* /index.html              200
