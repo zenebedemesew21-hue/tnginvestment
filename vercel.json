@@ -1,0 +1,16 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/memberdashboard.html" },
+    { "source": "/home", "destination": "/memberdashboard.html" },
+    { "source": "/memberdashboard", "destination": "/memberdashboard.html" },
+    { "source": "/vip", "destination": "/vipcenter.html" },
+    { "source": "/vipcenter", "destination": "/vipcenter.html" },
+    { "source": "/task", "destination": "/task.html" },
+    { "source": "/deposit", "destination": "/deposit.html" },
+    { "source": "/withdraw", "destination": "/withdraw.html" },
+    { "source": "/withdrawal", "destination": "/withdraw.html" },
+    { "source": "/profile", "destination": "/profile.html" },
+    { "source": "/admin", "destination": "/admin.html" }
+  ]
+}
+
